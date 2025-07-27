@@ -4,98 +4,42 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Geoportal de Validación CUT</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
-    #map {
-      width: 100%;
-      height: 90vh;
-    }
-    .legend {
-      background: white;
-      padding: 8px;
-      font-size: 12px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.3);
-    }
-    #panel {
-      position: absolute;
-      top: 60px;
-      right: 10px;
-      background: white;
-      padding: 10px;
-      z-index: 1000;
-      width: 230px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.5);
-    }
-    label, input, select {
-      display: block;
-      margin: 5px 0;
-      font-size: 13px;
-      width: 100%;
-    }
-    input[type="file"] {
-      font-size: 11px;
-    }
-    button {
-      margin-top: 8px;
-    }
+    #map { height: 90vh; }
+    .legend i { width: 18px; height: 18px; float: left; margin-right: 8px; opacity: 0.8; }
+    .legend { background: white; padding: 10px; line-height: 18px; font-size: 12px; }
+    .sidebar { position: absolute; top: 10px; right: 10px; background: white; padding: 10px; z-index: 1000; width: 260px; border-radius: 6px; box-shadow: 2px 2px 8px rgba(0,0,0,0.3); }
+    .sidebar input, .sidebar select { width: 100%; margin-bottom: 6px; }
+    .sidebar button { width: 100%; margin-top: 4px; }
   </style>
 </head>
 <body>
-  <h4 style="margin-left: 10px;">Verificación y reporte in situ del Muestreo de Validación CUT - serie temporal 1985 a 2023</h4>
 
-  <div id="map"></div>
+<h4>Verificación y reporte in situ del Muestreo de Validación CUT - serie temporal 1985 a 2023</h4>
+<label for="select-anyo">Año:</label>
+<select id="select-anyo"></select>
 
-  <div id="panel">
-    <form id="form-reporte">
-      <input type="hidden" id="plotid" name="plotid" />
+<div id="map"></div>
 
-      <label>Clase verificada:</label>
-      <input type="text" id="clase" required />
+<div class="sidebar">
+  <form id="form-reporte">
+    <label>PlotID:<input id="plotid" readonly /></label>
+    <label>Clase verificada:<input id="clase" /></label>
+    <label>Fecha:<input type="date" id="fecha" /></label>
+    <label>Nombre del técnico:<input id="tecnico" /></label>
+    <label>Dirección Provincial:<input id="provincia" /></label>
+    <label>Altitud:<input id="altitud" /></label>
+    <label>Fotografía:<input type="file" id="foto" accept="image/*" /></label>
+    <button type="submit">Guardar reporte</button>
+    <button type="button" onclick="generarReportePDF()">Generar reporte PDF</button>
+  </form>
+</div>
 
-      <label>Fecha:</label>
-      <input type="date" id="fecha" required />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="main.js"></script>
 
-      <label>Nombre del técnico:</label>
-      <input type="text" id="tecnico" required />
-
-      <label>Dirección Provincial:</label>
-      <input type="text" id="provincia" required />
-
-      <label>Altitud:</label>
-      <input type="number" id="altitud" required />
-
-      <label>Fotografía (código incluido):</label>
-      <input type="file" id="foto" accept="image/*" required />
-
-      <button type="submit">Guardar reporte</button>
-      <button type="button" onclick="generarReportePDF()">📄 Generar reporte PDF</button>
-    </form>
-  </div>
-
-  <div style="position:absolute;top:10px;left:10px;z-index:1000;background:white;padding:5px;">
-    <label for="select-anyo">Año:</label>
-    <select id="select-anyo"></select><br>
-    <input type="checkbox" checked onclick="toggleLayer('LIMITE_PROVINCIAL_CONALI_CNE_2022_4326')"> Provincias<br>
-    <input type="checkbox" checked onclick="toggleLayer('POBLADOS')"> Poblados<br>
-    <input type="checkbox" checked onclick="toggleLayer('ECOREGIONES_EC')"> Ecorregiones<br>
-    <input type="checkbox" checked onclick="toggleLayer('RIOS_SIMPLES4326')"> Ríos<br>
-    <input type="checkbox" checked onclick="toggleLayer('base_puntos_validados_ec_gl_1985_2023')"> Puntos validados
-  </div>
-
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script type="module" src="main.js"></script>
-  <script>
-    function toggleLayer(layerName) {
-      if (window.capas && window.capas[layerName]) {
-        const map = window.capas[layerName]._map;
-        if (map) {
-          map.removeLayer(window.capas[layerName]);
-        } else {
-          window.capas[layerName].addTo(window.mapa);
-        }
-      }
-    }
-  </script>
 </body>
 </html>
