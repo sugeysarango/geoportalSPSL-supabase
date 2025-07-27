@@ -1,100 +1,93 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Geoportal de Validación CUT</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
   <style>
-    #map { height: 100vh; }
-    .legend i {
-      width: 18px;
-      height: 18px;
-      float: left;
-      margin-right: 8px;
-      opacity: 0.7;
+    #map {
+      height: 100vh;
+      width: 100vw;
     }
-    .legend {
-      background: white;
-      padding: 10px;
-      line-height: 18px;
-      font-size: 12px;
-    }
-    form {
+
+    .formulario {
       position: absolute;
-      top: 50px;
-      right: 20px;
+      top: 60px;
+      right: 10px;
       z-index: 1000;
       background: white;
-      padding: 15px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      padding: 10px;
+      border-radius: 5px;
+      width: 250px;
+      font-family: sans-serif;
+      font-size: 14px;
     }
-    label, input, select, button {
-      display: block;
-      margin-bottom: 8px;
-      width: 100%;
-    }
-    .capas-control {
+
+    .leyenda {
       position: absolute;
-      top: 100px;
+      bottom: 30px;
       left: 10px;
       z-index: 1000;
       background: white;
       padding: 10px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      font-size: 14px;
+      border-radius: 5px;
+      font-family: sans-serif;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
     }
   </style>
 </head>
+
 <body>
-  <h2 style="margin-left: 10px">Verificación y reporte in situ del Muestreo de Validación CUT - serie temporal 1985 - 2023</h2>
+  <h2 style="font-family: sans-serif; margin: 10px;">
+    Verificación y reporte in situ del Muestreo de Validación CUT - serie temporal 1985 - 2023
+  </h2>
 
-  <div style="position:absolute; top:10px; left:10px; z-index:1000; background:white; padding:10px;">
-    Año:
-    <select id="select-anyo"></select>
+  <div class="formulario">
+    <form id="formulario">
+      <label for="plotid">PlotID:</label>
+      <input type="text" id="plotid" required /><br />
+
+      <label for="clase">Clase verificada:</label>
+      <input type="text" id="clase" required /><br />
+
+      <label for="fecha">Fecha:</label>
+      <input type="date" id="fecha" required /><br />
+
+      <label for="tecnico">Nombre del técnico:</label>
+      <input type="text" id="tecnico" required /><br />
+
+      <label for="provincia">Dirección Provincial:</label>
+      <input type="text" id="provincia" required /><br />
+
+      <label for="altitud">Altitud:</label>
+      <input type="text" id="altitud" required /><br />
+
+      <label for="foto">Fotografía:</label>
+      <input type="file" id="foto" accept="image/*" required /><br />
+
+      <button type="submit">Guardar reporte</button>
+      <button type="button" onclick="generarReportePDF()">Generar reporte PDF</button>
+    </form>
   </div>
 
-  <div class="capas-control">
-    <strong>Capas base</strong><br>
-    <label><input type="checkbox" id="check-provincias" checked /> Límites provinciales</label><br>
-    <label><input type="checkbox" id="check-ecoregiones" checked /> Ecorregiones</label><br>
-    <label><input type="checkbox" id="check-rios" checked /> Ríos</label><br>
-    <label><input type="checkbox" id="check-poblados" checked /> Poblados</label><br>
-    <label><input type="checkbox" id="check-puntos" checked /> Puntos validados</label>
+  <div class="leyenda" id="leyenda-clases">
+    <!-- Aquí se inyectará la leyenda desde JS -->
   </div>
-
-  <form id="form-reporte">
-    <label for="plotid">PlotID:</label>
-    <input type="text" id="plotid" required />
-
-    <label for="clase">Clase verificada:</label>
-    <input type="text" id="clase" required />
-
-    <label for="fecha">Fecha:</label>
-    <input type="date" id="fecha" required />
-
-    <label for="tecnico">Nombre del técnico:</label>
-    <input type="text" id="tecnico" required />
-
-    <label for="provincia">Dirección Provincial:</label>
-    <input type="text" id="provincia" required />
-
-    <label for="altitud">Altitud:</label>
-    <input type="text" id="altitud" required />
-
-    <label for="foto">Fotografía:</label>
-    <input type="file" id="foto" accept="image/*" required />
-
-    <button type="submit">Guardar reporte</button>
-    <button type="button" onclick="generarReportePDF()">Generar reporte PDF</button>
-  </form>
 
   <div id="map"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script type="module" src="main.js"></script>
+  <script src="main.js"></script>
 </body>
+
 </html>
