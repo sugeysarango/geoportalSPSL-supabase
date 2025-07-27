@@ -2,178 +2,100 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Geoportal de Validación CUT</title>
-
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-  <!-- jsPDF para generación de PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-  <!-- Supabase JS (importación correcta) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.3/+esm"></script>
-
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
-    html, body { height: 100%; margin: 0; padding: 0; }
-    #map { position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
-    #controls {
+    #map {
+      width: 100%;
+      height: 90vh;
+    }
+    .legend {
+      background: white;
+      padding: 8px;
+      font-size: 12px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    }
+    #panel {
       position: absolute;
       top: 60px;
-      left: 10px;
-      z-index: 1000;
-      background: white;
-      padding: 8px;
-      border-radius: 4px;
-      box-shadow: 0 0 6px rgba(0,0,0,0.3);
-    }
-    #select-anyo {
-      font-size: 14px;
-    }
-    #legend {
-      position: absolute;
-      bottom: 10px;
-      left: 10px;
-      z-index: 1000;
-      background: white;
-      padding: 8px;
-      border-radius: 4px;
-      font-size: 13px;
-      box-shadow: 0 0 6px rgba(0,0,0,0.3);
-    }
-    .checkboxes {
-      margin-top: 10px;
-    }
-    #reporte {
-      position: absolute;
-      top: 10px;
       right: 10px;
-      z-index: 1000;
       background: white;
-      padding: 8px;
-      border-radius: 4px;
-      font-size: 13px;
-      box-shadow: 0 0 6px rgba(0,0,0,0.3);
-      width: 220px;
+      padding: 10px;
+      z-index: 1000;
+      width: 230px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.5);
     }
-    #reporte h3 { margin-top: 0; }
-    #reporte input, #reporte select, #reporte textarea {
+    label, input, select {
+      display: block;
+      margin: 5px 0;
+      font-size: 13px;
       width: 100%;
-      margin-bottom: 6px;
-      padding: 4px;
-      font-size: 13px;
     }
-    #boton-imprimir {
-      position: absolute;
-      top: 260px;
-      right: 10px;
-      z-index: 1000;
-      background: #4CAF50;
-      color: white;
-      padding: 8px 10px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 13px;
+    input[type="file"] {
+      font-size: 11px;
+    }
+    button {
+      margin-top: 8px;
     }
   </style>
 </head>
 <body>
+  <h4 style="margin-left: 10px;">Verificación y reporte in situ del Muestreo de Validación CUT - serie temporal 1985 a 2023</h4>
 
-  <!-- Título -->
-  <div style="position:absolute;top:10px;left:10px;z-index:1000;background:white;padding:8px;border-radius:4px;font-weight:bold">
-    Verificación y reporte in situ del Muestreo de Validación CUT - serie temporal 1985 a 2023
-  </div>
+  <div id="map"></div>
 
-  <!-- Controles -->
-  <div id="controls">
-    <label for="select-anyo">Año:&nbsp;</label>
-    <select id="select-anyo"></select>
-    <div class="checkboxes">
-      <label><input type="checkbox" id="chkProvincias" checked /> Provincias</label><br />
-      <label><input type="checkbox" id="chkPoblados" checked /> Poblados</label><br />
-      <label><input type="checkbox" id="chkEcorregiones" checked /> Ecorregiones</label><br />
-      <label><input type="checkbox" id="chkRios" checked /> Ríos</label><br />
-      <label><input type="checkbox" id="chkPuntos" checked /> Puntos validados</label>
-    </div>
-  </div>
-
-  <!-- Leyenda -->
-  <div id="legend">
-    <b>Leyenda:</b><br />
-    <span style="color:red;">■</span> Provincias<br />
-    <span style="color:blue;">■</span> Ríos<br />
-    <span style="color:green;">■</span> Ecorregiones<br />
-    <span style="color:orange;">●</span> Puntos validados<br />
-    <span style="color:black;">●</span> Poblados
-  </div>
-
-  <!-- Formulario de reporte -->
-  <div id="reporte">
-    <h3>Reporte in situ</h3>
+  <div id="panel">
     <form id="form-reporte">
-      <input type="hidden" id="plotid" />
+      <input type="hidden" id="plotid" name="plotid" />
+
       <label>Clase verificada:</label>
       <input type="text" id="clase" required />
+
       <label>Fecha:</label>
       <input type="date" id="fecha" required />
+
       <label>Nombre del técnico:</label>
       <input type="text" id="tecnico" required />
+
       <label>Dirección Provincial:</label>
       <input type="text" id="provincia" required />
+
       <label>Altitud:</label>
       <input type="number" id="altitud" required />
+
       <label>Fotografía (código incluido):</label>
       <input type="file" id="foto" accept="image/*" required />
+
       <button type="submit">Guardar reporte</button>
+      <button type="button" onclick="generarReportePDF()">📄 Generar reporte PDF</button>
     </form>
   </div>
 
-  <!-- Botón para imprimir reporte -->
-  <button id="boton-imprimir" onclick="generarPDF()">📄 Generar reporte PDF</button>
+  <div style="position:absolute;top:10px;left:10px;z-index:1000;background:white;padding:5px;">
+    <label for="select-anyo">Año:</label>
+    <select id="select-anyo"></select><br>
+    <input type="checkbox" checked onclick="toggleLayer('LIMITE_PROVINCIAL_CONALI_CNE_2022_4326')"> Provincias<br>
+    <input type="checkbox" checked onclick="toggleLayer('POBLADOS')"> Poblados<br>
+    <input type="checkbox" checked onclick="toggleLayer('ECOREGIONES_EC')"> Ecorregiones<br>
+    <input type="checkbox" checked onclick="toggleLayer('RIOS_SIMPLES4326')"> Ríos<br>
+    <input type="checkbox" checked onclick="toggleLayer('base_puntos_validados_ec_gl_1985_2023')"> Puntos validados
+  </div>
 
-  <!-- Contenedor del mapa -->
-  <div id="map"></div>
-
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <!-- Tu script principal -->
-  <script defer src="main.js"></script>
-
-  <!-- Función para generar PDF -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script type="module" src="main.js"></script>
   <script>
-    async function generarPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      const plotid = document.getElementById("plotid").value;
-      const clase = document.getElementById("clase").value;
-      const fecha = document.getElementById("fecha").value;
-      const tecnico = document.getElementById("tecnico").value;
-      const provincia = document.getElementById("provincia").value;
-      const altitud = document.getElementById("altitud").value;
-      const foto = document.getElementById("foto").files[0];
-
-      doc.setFontSize(12);
-      doc.text(`Clase verificada: ${clase}`, 10, 20);
-      doc.text(`Fecha: ${fecha}`, 10, 30);
-      doc.text(`Técnico: ${tecnico}`, 10, 40);
-      doc.text(`Dirección Provincial: ${provincia}`, 10, 50);
-      doc.text(`Altitud: ${altitud} m`, 10, 60);
-
-      if (foto) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          const imgData = e.target.result;
-          doc.addImage(imgData, 'JPEG', 10, 70, 100, 75);
-          doc.save(`Reporte_${plotid || 'sin_id'}.pdf`);
-        };
-        reader.readAsDataURL(foto);
-      } else {
-        doc.save(`Reporte_${plotid || 'sin_id'}.pdf`);
+    function toggleLayer(layerName) {
+      if (window.capas && window.capas[layerName]) {
+        const map = window.capas[layerName]._map;
+        if (map) {
+          map.removeLayer(window.capas[layerName]);
+        } else {
+          window.capas[layerName].addTo(window.mapa);
+        }
       }
     }
   </script>
-
 </body>
 </html>
