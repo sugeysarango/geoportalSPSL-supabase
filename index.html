@@ -2,59 +2,59 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Geoportal de Validación CUT</title>
+
+  <!-- Leaflet CSS (sin atributo integrity) -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha512-sA+e2CkX1ugT6GiI6Fr6Z7Vg6hTy3vTrs5q6jdt6dfmPFS7iACtBeAemN0AYrJ8h8lHFExLOfxg+K+F4RuDg=="
-    crossorigin=""
   />
+
   <style>
     body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-    #map { height: 100vh; width: 100%; }
-    .form-container {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      z-index: 1000;
-      background: white;
-      padding: 15px;
-      border: 1px solid #ccc;
-      max-width: 300px;
-      font-size: 14px;
-    }
-    .form-container input,
-    .form-container button,
-    .form-container select {
-      width: 100%;
-      margin-bottom: 8px;
-      padding: 5px;
-    }
-    .legend {
+    #map { width: 100%; height: 600px; }
+    .info.legend {
       background: white;
       padding: 10px;
       line-height: 18px;
       color: #333;
     }
-    .legend i {
+    .info.legend i {
       width: 18px;
       height: 18px;
       float: left;
       margin-right: 8px;
       opacity: 0.7;
     }
+    #form-container {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      z-index: 1000;
+      max-width: 300px;
+    }
+    select, input, button {
+      width: 100%;
+      margin: 5px 0;
+    }
   </style>
 </head>
 <body>
-  <h3 style="padding: 10px;">Verificación y reporte in situ del Muestreo de Validación CUT - serie temporal 1985 a 2023</h3>
 
-  <div style="padding: 0 10px;">
-    <label for="select-anyo">Año:</label>
+  <h4 style="padding: 10px;">
+    Verificación y reporte in situ del Muestreo de Validación CUT - serie temporal 1985 a 2023
+  </h4>
+
+  <label style="padding-left: 10px;">Año:
     <select id="select-anyo"></select>
-  </div>
+  </label>
 
-  <div class="form-container">
+  <div id="form-container">
     <form id="form-reporte">
       <label for="plotid">PlotID:</label>
       <input type="text" id="plotid" required />
@@ -84,13 +84,13 @@
 
   <div id="map"></div>
 
-  <!-- Librerías necesarias -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha512-QV2pgl3AsD0zRcbjZY2bnMgn7OZkbN3VmEeKzMuZPL0lBuV2O01V2DC+KLuLTfH72KZ6x34BjG8XklboPR7F8A=="
-    crossorigin=""></script>
+  <!-- Leaflet JS (sin atributo integrity) -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- jsPDF para generación de PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-  <!-- ✅ Tu script corregido: -->
+  <!-- Tu script principal -->
   <script type="module" src="main.js"></script>
 </body>
 </html>
