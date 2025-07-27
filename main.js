@@ -1,102 +1,63 @@
-// main.js
+// Inserta esto en tu archivo main.js debajo de las otras capas existentes
 
-// 1. Configuración de Supabase
-const SUPA_URL = 'https://kkjtytomvcfimovxllpj.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtranR5dG9tdmNmaW1vdnhsbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzMDQzMzgsImV4cCI6MjA2ODg4MDMzOH0.BWtig4Et9BLE2t9xno6JudoRho3xBCS4VjFL1h3TT-8';
+// API y URL base
+const supabaseUrl = 'https://kkjtytomvcfimovxllpj.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtranR5dG9tdmNmaW1vdnhsbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzMDQzMzgsImV4cCI6MjA2ODg4MDMzOH0.BWtig4Et9BLE2t9xno6JudoRho3xBCS4VjFL1h3TT-8';
+const options = { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` } };
 
-// 2. Lista de años 1985–2023
-const años = Array.from({ length: 2023 - 1985 + 1 }, (_, i) => 1985 + i);
+// Función para cargar GeoJSON y añadir al mapa
+async function cargarGeoJSON(tabla, capaNombre, estilo, popupField) {
+  const response = await fetch(`${supabaseUrl}/rest/v1/${tabla}?select=*`, options);
+  const data = await response.json();
 
-// 3. Mapa de clases a colores
-const colores = {
-  'Bosque Abierto': '#228B22',
-  'Bosque Denso':  '#006400',
-  'Pasto':         '#7CFC00',
-  'Herbazales de Paramo': '#ADFF2F',
-  'Agricultura no especifica': '#FFD700',
-  'Sin Informacion': '#A9A9A9',
-  // ... tus otros valores
-};
-
-let mapa, capaActual;
-
-// 4. Inicializa Leaflet
-function initMapa() {
-  mapa = L.map('map').setView([-1.5, -79.0], 6);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors',
-    maxZoom: 19
-  }).addTo(mapa);
-}
-
-// 5. Población del selector de años
-function initSelector() {
-  const select = document.getElementById('select-anyo');
-  años.forEach(año => {
-    const opt = document.createElement('option');
-    opt.value = año;
-    opt.textContent = año;
-    select.appendChild(opt);
-  });
-  select.addEventListener('change', e => cargarPuntos(+e.target.value));
-}
-
-// 6. Fetch a Supabase
-function fetchGeo(año) {
-  const params = `select=plotid,cut${año},geojson`;
-  return fetch(`${SUPA_URL}/rest/v1/puntos_validos_geo?${params}`, {
-    headers: {
-      apikey: SUPA_KEY,
-      Authorization: `Bearer ${SUPA_KEY}`
+  const capa = L.geoJSON(data, {
+    style: estilo,
+    pointToLayer: (feature, latlng) => {
+      if (tabla === 'POBLADOS') {
+        return L.circleMarker(latlng, { radius: 5, fillColor: 'blue', fillOpacity: 0.8, color: 'white', weight: 1 });
+      }
+      return L.marker(latlng);
+    },
+    onEachFeature: function (feature, layer) {
+      if (popupField && feature.properties[popupField]) {
+        layer.bindPopup(`<strong>${feature.properties[popupField]}</strong>`);
+      }
     }
-  })
-  .then(res => {
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res.json();
   });
+
+  capa.addTo(map);
+  capasDisponibles[capaNombre] = capa;
+  agregarCheckbox(capaNombre);
 }
 
-// 7. Dibuja los puntos en el mapa
-function cargarPuntos(año) {
-  if (capaActual) mapa.removeLayer(capaActual);
+// Crear objeto de capas disponibles
+const capasDisponibles = {};
 
-  fetchGeo(año)
-    .then(rows => {
-      const features = rows.map(r => ({
-        type: 'Feature',
-        geometry: r.geojson,
-        properties: {
-          plotid: r.plotid,
-          clase:  r[`cut${año}`]
-        }
-      }));
-
-      capaActual = L.geoJSON(
-        { type: 'FeatureCollection', features },
-        {
-          pointToLayer: (f, latlng) => L.circleMarker(latlng, {
-            radius: 5,
-            fillColor: colores[f.properties.clase] || '#000',
-            color: '#000',
-            weight: 1,
-            fillOpacity: 0.8
-          }),
-          onEachFeature: (f, layer) => {
-            layer.bindPopup(
-              `PlotID: ${f.properties.plotid}<br>Clase: ${f.properties.clase}`
-            );
-          }
-        }
-      ).addTo(mapa);
-
-      mapa.fitBounds(capaActual.getBounds());
-    })
-    .catch(err => console.error('Error cargando puntos:', err));
+// Agregar checkboxes
+function agregarCheckbox(nombre) {
+  const capaDiv = document.getElementById('capas');
+  const label = document.createElement('label');
+  const input = document.createElement('input');
+  input.type = 'checkbox';
+  input.checked = true;
+  input.onchange = () => {
+    if (input.checked) {
+      capasDisponibles[nombre].addTo(map);
+    } else {
+      map.removeLayer(capasDisponibles[nombre]);
+    }
+  };
+  label.appendChild(input);
+  label.appendChild(document.createTextNode(` ${nombre}`));
+  capaDiv.appendChild(label);
+  capaDiv.appendChild(document.createElement('br'));
 }
 
-// 8. Arranca todo al cargar la página
-window.addEventListener('DOMContentLoaded', () => {
-  initMapa();
-  initSelector();
-  cargarPuntos(años[0]);
-});
+// Cargar todas las capas
+cargarGeoJSON('LIMITE_PROVINCIAL_CONALI_CNE_2022_4326', 'Provincias', { color: 'red', weight: 2 }, 'PROVINCIA');
+cargarGeoJSON('POBLADOS', 'Poblados', {}, 'nombre');
+cargarGeoJSON('ECOREGIONES_EC', 'Ecorregiones', { color: 'green', weight: 1, fillOpacity: 0.4 }, 'NOMBRE');
+cargarGeoJSON('RIOS_SIMPLES4326', 'Ríos', { color: 'blue', weight: 1 }, 'NAM');
+cargarGeoJSON('base_puntos_validados_ec_gl_1985_2023', 'Puntos validados', {
+  radius: 3, fillColor: 'orange', fillOpacity: 0.7, color: 'gray', weight: 0.5
+}, 'plotid');
