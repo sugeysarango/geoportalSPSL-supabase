@@ -1,3 +1,4 @@
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 // main.js completo para el Geoportal con Supabase y Leaflet + generación de PDF con fotos
 
 // 1. Configuración de Supabase
