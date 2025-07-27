@@ -36,14 +36,33 @@
     .checkboxes {
       margin-top: 10px;
     }
+    #reporte {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 1000;
+      background: white;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 13px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.3);
+      width: 220px;
+    }
+    #reporte h3 { margin-top: 0; }
+    #reporte input, #reporte select, #reporte textarea {
+      width: 100%;
+      margin-bottom: 6px;
+      padding: 4px;
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
   <!-- Título -->
- <!-- Título del Geoportal visible en el mapa -->
-<div style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; background: white; padding: 10px 20px; border-radius: 6px; font-weight: bold; box-shadow: 0 2px 6px rgba(0,0,0,0.2); font-size: 16px;">
-  Verificación y reporte in situ del Muestreo de Validación CUT – Serie temporal 1985 a 2023
-</div>
+  <div style="position:absolute;top:10px;left:10px;z-index:1000;background:white;padding:8px;border-radius:4px;font-weight:bold">
+    Verificación-reporte in situ del Muestreo de Validación CUT - serie temporal 1985 a 2023
+  </div>
+
   <!-- Controles -->
   <div id="controls">
     <label for="select-anyo">Año:&nbsp;</label>
@@ -67,6 +86,27 @@
     <span style="color:green;">■</span> Ecorregiones<br />
     <span style="color:orange;">●</span> Puntos validados<br />
     <span style="color:black;">●</span> Poblados
+  </div>
+
+  <!-- Formulario de reporte in situ -->
+  <div id="reporte">
+    <h3>Reporte in situ</h3>
+    <form id="form-reporte">
+      <input type="hidden" id="plotid" />
+      <label>Clase verificada:</label>
+      <input type="text" id="clase" required />
+      <label>Fecha:</label>
+      <input type="date" id="fecha" required />
+      <label>Nombre del técnico:</label>
+      <input type="text" id="tecnico" required />
+      <label>Dirección Provincial:</label>
+      <input type="text" id="provincia" required />
+      <label>Altitud:</label>
+      <input type="number" id="altitud" required />
+      <label>Fotografía (código incluido):</label>
+      <input type="file" id="foto" accept="image/*" required />
+      <button type="submit">Guardar reporte</button>
+    </form>
   </div>
 
   <!-- Contenedor del mapa -->
