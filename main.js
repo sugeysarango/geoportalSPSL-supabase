@@ -1,34 +1,49 @@
 // main.js completo para el Geoportal con Supabase y Leaflet + generación de PDF con fotos
 
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
 // 1. Configuración de Supabase
 const SUPABASE_URL = 'https://kkjtytomvcfimovxllpj.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtranR5dG9tdmNmaW1vdnhsbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzMDQzMzgsImV4cCI6MjA2ODg4MDMzOH0.BWtig4Et9BLE2t9xno6JudoRho3xBCS4VjFL1h3TT-8';
 
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
 // 2. Lista de años
 const años = Array.from({ length: 2023 - 1985 + 1 }, (_, i) => 1985 + i);
 
-// 3. Colores por clase
+// 3. Colores por clase (ampliado)
 const colores = {
-  'Bosque Abierto': '#228B22',
-  'Bosque Denso':  '#006400',
-  'Pasto':         '#7CFC00',
-  'Herbazales de Paramo': '#ADFF2F',
-  'Agricultura no especifica': '#FFD700',
-  'Sin Informacion': '#A9A9A9'
+  'Bosque Abierto': '#228B22', 'Bosque Denso': '#006400', 'Pasto': '#7CFC00',
+  'Herbazales de Paramo': '#ADFF2F', 'Agricultura no especifica': '#FFD700',
+  'Cuerpos de Agua': '#00BFFF', 'Infraestructura': '#A0522D', 'Manglar': '#2E8B57',
+  'Matorral Seco': '#CD853F', 'Matorral Humedo': '#8B4513', 'Nieve o Hielo': '#F0F8FF',
+  'No Observada': '#D3D3D3', 'Otros': '#B0C4DE', 'Plantación Forestal': '#556B2F',
+  'Rastrojo': '#DAA520', 'Río': '#1E90FF', 'Roca Desnuda': '#808080',
+  'Sin Informacion': '#A9A9A9', 'Suelo Desnudo': '#F5DEB3', 'Urbanización': '#B22222',
+  'Vegetación Herbácea': '#9ACD32', 'Zonas Agropecuarias': '#FFDAB9'
 };
 
 let mapa;
 const capas = {}; // Guarda las capas activas
 
-// 4. Inicializa el mapa
 function initMapa() {
   mapa = L.map('map').setView([-1.5, -78.5], 6);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(mapa);
+
+  // Añadir leyenda
+  const legend = L.control({ position: 'bottomright' });
+  legend.onAdd = () => {
+    const div = L.DomUtil.create('div', 'info legend');
+    for (const clase in colores) {
+      div.innerHTML += `<i style="background:${colores[clase]}"></i> ${clase}<br>`;
+    }
+    return div;
+  };
+  legend.addTo(mapa);
 }
 
-// 5. Crea el selector de año
 function initSelector() {
   const select = document.getElementById('select-anyo');
   años.forEach(a => {
@@ -40,33 +55,23 @@ function initSelector() {
   select.addEventListener('change', e => cargarPuntos(+e.target.value));
 }
 
-// 6. Cargar puntos validados por año
 function cargarPuntos(año) {
   if (capas.puntos) mapa.removeLayer(capas.puntos);
 
   const url = `${SUPABASE_URL}/rest/v1/puntos_validos_geo?select=plotid,cut${año},geojson`;
   fetch(url, {
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`
-    }
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
   })
   .then(res => res.json())
   .then(data => {
     const features = data.map(d => ({
-      type: 'Feature',
-      geometry: d.geojson,
-      properties: {
-        plotid: d.plotid,
-        clase: d[`cut${año}`]
-      }
+      type: 'Feature', geometry: d.geojson,
+      properties: { plotid: d.plotid, clase: d[`cut${año}`] }
     }));
     capas.puntos = L.geoJSON(features, {
       pointToLayer: (f, latlng) => L.circleMarker(latlng, {
-        radius: 5,
-        fillColor: colores[f.properties.clase] || '#000',
-        color: '#000', weight: 1,
-        fillOpacity: 0.8
+        radius: 4, fillColor: colores[f.properties.clase] || '#000',
+        color: '#000', weight: 0.5, fillOpacity: 0.8
       }),
       onEachFeature: (f, layer) => {
         layer.bindPopup(`PlotID: ${f.properties.plotid}<br>Clase: ${f.properties.clase}`);
@@ -79,29 +84,22 @@ function cargarPuntos(año) {
   });
 }
 
-// 7. Cargar capas adicionales
 function cargarGeoJSON(tabla, nombre, estilo, campoPopup) {
   const url = `${SUPABASE_URL}/rest/v1/${tabla}?select=${campoPopup},geom`;
   fetch(url, {
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`
-    }
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
   })
   .then(res => res.json())
   .then(data => {
     const features = data.map(d => ({
-      type: 'Feature',
-      geometry: d.geom,
+      type: 'Feature', geometry: d.geom,
       properties: { [campoPopup]: d[campoPopup] }
     }));
     let capa;
     if (tabla === 'POBLADOS') {
       capa = L.geoJSON(features, {
         pointToLayer: (f, latlng) => L.circleMarker(latlng, {
-          radius: 3,
-          color: 'black',
-          fillOpacity: 0.6
+          radius: 3, color: 'black', fillOpacity: 0.6
         }),
         onEachFeature: (f, l) => l.bindPopup(`${f.properties[campoPopup]}`)
       });
@@ -115,12 +113,9 @@ function cargarGeoJSON(tabla, nombre, estilo, campoPopup) {
   });
 }
 
-// 8. Guardar datos del formulario en Supabase
 const form = document.getElementById('form-reporte');
-
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
-
   const plotid = document.getElementById('plotid').value;
   const clase = document.getElementById('clase').value;
   const fecha = document.getElementById('fecha').value;
@@ -136,17 +131,14 @@ form.addEventListener('submit', async (e) => {
   }
 
   try {
-    const { createClient } = supabase;
-    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
-
     const filePath = `reportes_fotos/${plotid}_${Date.now()}.jpg`;
-    const { data: uploadData, error: uploadError } = await supabaseClient.storage.from('reportes_fotos').upload(filePath, foto);
+    const { data: uploadData, error: uploadError } = await supabase.storage.from('reportes_fotos').upload(filePath, foto);
 
     if (uploadError) throw uploadError;
 
     const imageUrl = `${SUPABASE_URL}/storage/v1/object/public/${uploadData.fullPath}`;
 
-    const { data, error } = await supabaseClient.from('reportes_in_situ').insert([
+    const { data, error } = await supabase.from('reportes_in_situ').insert([
       { plotid, clase_verificada: clase, fecha_verificacion: fecha, tecnico, provincia, altitud, foto_url: imageUrl }
     ]);
 
@@ -160,13 +152,9 @@ form.addEventListener('submit', async (e) => {
   }
 });
 
-// 9. Generar PDF con los reportes del día
 async function generarReportePDF() {
   const hoy = new Date().toISOString().split('T')[0];
-  const { createClient } = supabase;
-  const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  const { data: reportes, error } = await supabaseClient
+  const { data: reportes, error } = await supabase
     .from('reportes_in_situ')
     .select('*')
     .eq('fecha_verificacion', hoy);
@@ -207,7 +195,6 @@ async function generarReportePDF() {
   pdf.save(`Reporte_verificacion_${hoy}.pdf`);
 }
 
-// 10. Inicializa todo
 window.addEventListener('DOMContentLoaded', () => {
   initMapa();
   initSelector();
