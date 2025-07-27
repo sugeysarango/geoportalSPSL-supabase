@@ -2,44 +2,103 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Geoportal de Validación CUT</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
-    #map { height: 90vh; }
-    .legend i { width: 18px; height: 18px; float: left; margin-right: 8px; opacity: 0.8; }
-    .legend { background: white; padding: 10px; line-height: 18px; font-size: 12px; }
-    .sidebar { position: absolute; top: 10px; right: 10px; background: white; padding: 10px; z-index: 1000; width: 260px; border-radius: 6px; box-shadow: 2px 2px 8px rgba(0,0,0,0.3); }
-    .sidebar input, .sidebar select { width: 100%; margin-bottom: 6px; }
-    .sidebar button { width: 100%; margin-top: 4px; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+    .info {
+      padding: 6px 8px;
+      font: 14px/16px Arial, Helvetica, sans-serif;
+      background: white;
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+    }
+    .legend {
+      line-height: 18px;
+      color: #555;
+    }
+    .legend i {
+      width: 18px;
+      height: 18px;
+      float: left;
+      margin-right: 8px;
+      opacity: 0.7;
+    }
+    #form-reporte {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: white;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      z-index: 1000;
+      font-size: 12px;
+      width: 220px;
+    }
+    #form-reporte input,
+    #form-reporte select,
+    #form-reporte button {
+      width: 100%;
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+    #select-anyo {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 1000;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
+  <h4 style="margin: 10px;">Verificación y reporte in situ del Muestreo de Validación CUT - serie temporal 1985 a 2023</h4>
 
-<h4>Verificación y reporte in situ del Muestreo de Validación CUT - serie temporal 1985 a 2023</h4>
-<label for="select-anyo">Año:</label>
-<select id="select-anyo"></select>
+  <select id="select-anyo">
+    <option disabled selected>Año:</option>
+  </select>
 
-<div id="map"></div>
+  <div id="form-reporte">
+    <form id="form-reporte">
+      <label for="plotid">PlotID:</label>
+      <input type="text" id="plotid" readonly />
 
-<div class="sidebar">
-  <form id="form-reporte">
-    <label>PlotID:<input id="plotid" readonly /></label>
-    <label>Clase verificada:<input id="clase" /></label>
-    <label>Fecha:<input type="date" id="fecha" /></label>
-    <label>Nombre del técnico:<input id="tecnico" /></label>
-    <label>Dirección Provincial:<input id="provincia" /></label>
-    <label>Altitud:<input id="altitud" /></label>
-    <label>Fotografía:<input type="file" id="foto" accept="image/*" /></label>
-    <button type="submit">Guardar reporte</button>
-    <button type="button" onclick="generarReportePDF()">Generar reporte PDF</button>
-  </form>
-</div>
+      <label for="clase">Clase verificada:</label>
+      <input type="text" id="clase" required />
 
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="main.js"></script>
+      <label for="fecha">Fecha:</label>
+      <input type="date" id="fecha" required />
 
+      <label for="tecnico">Nombre del técnico:</label>
+      <input type="text" id="tecnico" required />
+
+      <label for="provincia">Dirección Provincial:</label>
+      <input type="text" id="provincia" required />
+
+      <label for="altitud">Altitud:</label>
+      <input type="text" id="altitud" required />
+
+      <label for="foto">Fotografía:</label>
+      <input type="file" id="foto" accept="image/*" required />
+
+      <button type="submit">Guardar reporte</button>
+      <button type="button" onclick="generarReportePDF()">Generar reporte PDF</button>
+    </form>
+  </div>
+
+  <div id="map"></div>
+
+  <script type="module" src="main.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
 </html>
