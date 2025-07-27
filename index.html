@@ -22,6 +22,20 @@
     #select-anyo {
       font-size: 14px;
     }
+    #legend {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      z-index: 1000;
+      background: white;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 13px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.3);
+    }
+    .checkboxes {
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -34,6 +48,25 @@
   <div id="controls">
     <label for="select-anyo">Año:&nbsp;</label>
     <select id="select-anyo"></select>
+
+    <!-- Checkboxes de capas -->
+    <div class="checkboxes">
+      <label><input type="checkbox" id="chkProvincias" checked /> Provincias</label><br />
+      <label><input type="checkbox" id="chkPoblados" checked /> Poblados</label><br />
+      <label><input type="checkbox" id="chkEcorregiones" checked /> Ecorregiones</label><br />
+      <label><input type="checkbox" id="chkRios" checked /> Ríos</label><br />
+      <label><input type="checkbox" id="chkPuntos" checked /> Puntos validados</label>
+    </div>
+  </div>
+
+  <!-- Leyenda -->
+  <div id="legend">
+    <b>Leyenda:</b><br />
+    <span style="color:red;">■</span> Provincias<br />
+    <span style="color:blue;">■</span> Ríos<br />
+    <span style="color:green;">■</span> Ecorregiones<br />
+    <span style="color:orange;">●</span> Puntos validados<br />
+    <span style="color:black;">●</span> Poblados
   </div>
 
   <!-- Contenedor del mapa -->
