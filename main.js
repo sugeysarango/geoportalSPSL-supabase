@@ -2,7 +2,7 @@
 
 // 1. Configuración de Supabase
 const SUPA_URL = 'https://kkjtytomvcfimovxllpj.supabase.co';
-const SUPA_KEY = 'TU_ANON_KEY_AQUI';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtranR5dG9tdmNmaW1vdnhsbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzMDQzMzgsImV4cCI6MjA2ODg4MDMzOH0.BWtig4Et9BLE2t9xno6JudoRho3xBCS4VjFL1h3TT-8';
 
 // 2. Lista de años 1985–2023
 const años = Array.from({ length: 2023 - 1985 + 1 }, (_, i) => 1985 + i);
