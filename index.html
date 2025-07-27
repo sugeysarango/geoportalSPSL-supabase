@@ -4,27 +4,38 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Geoportal de Validación CUT</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha512-sA+e2CkX1ugT6GiI6Fr6Z7Vg6hTy3vTrs5q6jdt6dfmPFS7iACtBeAemN0AYrJ8h8lHFExLOfxg+K+F4RuDg=="
+    crossorigin=""
+  />
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-    #map {
-      height: 100vh;
-      width: 100%;
-    }
-    .info {
-      padding: 6px 8px;
-      font: 14px/16px Arial, Helvetica, sans-serif;
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    #map { height: 100vh; width: 100%; }
+    .form-container {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 1000;
       background: white;
-      background: rgba(255, 255, 255, 0.8);
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-      border-radius: 5px;
+      padding: 15px;
+      border: 1px solid #ccc;
+      max-width: 300px;
+      font-size: 14px;
+    }
+    .form-container input,
+    .form-container button,
+    .form-container select {
+      width: 100%;
+      margin-bottom: 8px;
+      padding: 5px;
     }
     .legend {
+      background: white;
+      padding: 10px;
       line-height: 18px;
-      color: #555;
+      color: #333;
     }
     .legend i {
       width: 18px;
@@ -33,45 +44,20 @@
       margin-right: 8px;
       opacity: 0.7;
     }
-    #form-reporte {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: white;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      z-index: 1000;
-      font-size: 12px;
-      width: 220px;
-    }
-    #form-reporte input,
-    #form-reporte select,
-    #form-reporte button {
-      width: 100%;
-      margin-bottom: 8px;
-      font-size: 12px;
-    }
-    #select-anyo {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 1000;
-      font-size: 14px;
-    }
   </style>
 </head>
 <body>
-  <h4 style="margin: 10px;">Verificación y reporte in situ del Muestreo de Validación CUT - serie temporal 1985 a 2023</h4>
+  <h3 style="padding: 10px;">Verificación y reporte in situ del Muestreo de Validación CUT - serie temporal 1985 a 2023</h3>
 
-  <select id="select-anyo">
-    <option disabled selected>Año:</option>
-  </select>
+  <div style="padding: 0 10px;">
+    <label for="select-anyo">Año:</label>
+    <select id="select-anyo"></select>
+  </div>
 
-  <div id="form-reporte">
+  <div class="form-container">
     <form id="form-reporte">
       <label for="plotid">PlotID:</label>
-      <input type="text" id="plotid" readonly />
+      <input type="text" id="plotid" required />
 
       <label for="clase">Clase verificada:</label>
       <input type="text" id="clase" required />
@@ -98,7 +84,13 @@
 
   <div id="map"></div>
 
-  <script type="module" src="main.js"></script>
+  <!-- Librerías necesarias -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha512-QV2pgl3AsD0zRcbjZY2bnMgn7OZkbN3VmEeKzMuZPL0lBuV2O01V2DC+KLuLTfH72KZ6x34BjG8XklboPR7F8A=="
+    crossorigin=""></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- ✅ Tu script corregido: -->
+  <script type="module" src="main.js"></script>
 </body>
 </html>
