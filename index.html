@@ -4,9 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Geoportal de Validación CUT</title>
+
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- jsPDF para generación de PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Supabase JS (importación correcta) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.42.3/+esm"></script>
+
   <style>
     html, body { height: 100%; margin: 0; padding: 0; }
     #map { position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
@@ -72,7 +79,8 @@
   </style>
 </head>
 <body>
-  <!-- Título único -->
+
+  <!-- Título -->
   <div style="position:absolute;top:10px;left:10px;z-index:1000;background:white;padding:8px;border-radius:4px;font-weight:bold">
     Verificación y reporte in situ del Muestreo de Validación CUT - serie temporal 1985 a 2023
   </div>
@@ -100,7 +108,7 @@
     <span style="color:black;">●</span> Poblados
   </div>
 
-  <!-- Formulario de reporte in situ -->
+  <!-- Formulario de reporte -->
   <div id="reporte">
     <h3>Reporte in situ</h3>
     <form id="form-reporte">
@@ -130,14 +138,15 @@
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- Script principal -->
-<script type="module" src="main.js"></script>
+  <!-- Tu script principal -->
+  <script defer src="main.js"></script>
 
   <!-- Función para generar PDF -->
   <script>
     async function generarPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
+      const plotid = document.getElementById("plotid").value;
       const clase = document.getElementById("clase").value;
       const fecha = document.getElementById("fecha").value;
       const tecnico = document.getElementById("tecnico").value;
@@ -157,13 +166,14 @@
         reader.onload = function (e) {
           const imgData = e.target.result;
           doc.addImage(imgData, 'JPEG', 10, 70, 100, 75);
-          doc.save(`Reporte_${plotid.value || 'sin_id'}.pdf`);
+          doc.save(`Reporte_${plotid || 'sin_id'}.pdf`);
         };
         reader.readAsDataURL(foto);
       } else {
-        doc.save(`Reporte_${plotid.value || 'sin_id'}.pdf`);
+        doc.save(`Reporte_${plotid || 'sin_id'}.pdf`);
       }
     }
   </script>
+
 </body>
 </html>
