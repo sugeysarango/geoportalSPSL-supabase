@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Geoportal de Cobertura de Suelo</title>
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+  <style>
+    html, body { height: 100%; margin: 0; padding: 0; }
+    #map { position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
+    #controls { position: absolute; top: 10px; left: 10px; z-index: 1000; background: white; padding: 6px; border-radius: 4px; }
+    #select-anyo { font-size: 14px; }
+  </style>
+</head>
+<body>
+  <!-- Controles de selección -->
+  <div id="controls">
+    <label for="select-anyo">Año:&nbsp;</label>
+    <select id="select-anyo"></select>
+  </div>
+
+  <!-- Contenedor del mapa -->
+  <div id="map"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Script principal -->
+  <script src="main.js"></script>
+</body>
+</html>
