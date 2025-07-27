@@ -6,6 +6,7 @@
   <title>Geoportal de Validación CUT</title>
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     html, body { height: 100%; margin: 0; padding: 0; }
     #map { position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
@@ -55,6 +56,19 @@
       padding: 4px;
       font-size: 13px;
     }
+    #boton-imprimir {
+      position: absolute;
+      top: 260px;
+      right: 10px;
+      z-index: 1000;
+      background: #4CAF50;
+      color: white;
+      padding: 8px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
@@ -67,8 +81,6 @@
   <div id="controls">
     <label for="select-anyo">Año:&nbsp;</label>
     <select id="select-anyo"></select>
-
-    <!-- Checkboxes de capas -->
     <div class="checkboxes">
       <label><input type="checkbox" id="chkProvincias" checked /> Provincias</label><br />
       <label><input type="checkbox" id="chkPoblados" checked /> Poblados</label><br />
@@ -109,6 +121,9 @@
     </form>
   </div>
 
+  <!-- Botón para imprimir reporte -->
+  <button id="boton-imprimir" onclick="generarPDF()">📄 Generar reporte PDF</button>
+
   <!-- Contenedor del mapa -->
   <div id="map"></div>
 
@@ -117,5 +132,38 @@
 
   <!-- Script principal -->
   <script defer src="main.js"></script>
+
+  <!-- Función para generar PDF -->
+  <script>
+    async function generarPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const clase = document.getElementById("clase").value;
+      const fecha = document.getElementById("fecha").value;
+      const tecnico = document.getElementById("tecnico").value;
+      const provincia = document.getElementById("provincia").value;
+      const altitud = document.getElementById("altitud").value;
+      const foto = document.getElementById("foto").files[0];
+
+      doc.setFontSize(12);
+      doc.text(`Clase verificada: ${clase}`, 10, 20);
+      doc.text(`Fecha: ${fecha}`, 10, 30);
+      doc.text(`Técnico: ${tecnico}`, 10, 40);
+      doc.text(`Dirección Provincial: ${provincia}`, 10, 50);
+      doc.text(`Altitud: ${altitud} m`, 10, 60);
+
+      if (foto) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const imgData = e.target.result;
+          doc.addImage(imgData, 'JPEG', 10, 70, 100, 75);
+          doc.save(`Reporte_${plotid.value || 'sin_id'}.pdf`);
+        };
+        reader.readAsDataURL(foto);
+      } else {
+        doc.save(`Reporte_${plotid.value || 'sin_id'}.pdf`);
+      }
+    }
+  </script>
 </body>
 </html>
