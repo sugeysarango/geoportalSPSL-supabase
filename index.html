@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Geoportal de Cobertura de Suelo</title>
+  <title>Verificación y reporte in situ del Muestreo de Validación CUT - serie temporal 1985 a 2023</title>
   <!-- Leaflet CSS -->
   <link
     rel="stylesheet"
@@ -12,7 +12,15 @@
   <style>
     html, body { height: 100%; margin: 0; padding: 0; }
     #map { position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
-    #controls { position: absolute; top: 10px; left: 10px; z-index: 1000; background: white; padding: 6px; border-radius: 4px; }
+    #controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 1000;
+      background: white;
+      padding: 6px;
+      border-radius: 4px;
+    }
     #select-anyo { font-size: 14px; }
   </style>
 </head>
@@ -28,7 +36,7 @@
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- Script principal -->
-  <script src="main.js"></script>
+  <!-- Script principal con defer -->
+  <script src="main.js" defer></script>
 </body>
 </html>
