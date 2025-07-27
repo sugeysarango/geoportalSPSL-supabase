@@ -1,96 +1,84 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Geoportal de Validación CUT</title>
-
-  <!-- Leaflet CSS (sin atributo integrity) -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Leaflet sin integridad -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-    #map { width: 100%; height: 600px; }
-    .info.legend {
-      background: white;
-      padding: 10px;
-      line-height: 18px;
-      color: #333;
-    }
-    .info.legend i {
+    #map { height: 100vh; }
+    .legend i {
       width: 18px;
       height: 18px;
       float: left;
       margin-right: 8px;
       opacity: 0.7;
     }
-    #form-container {
+    .legend {
+      background: white;
+      padding: 10px;
+      line-height: 18px;
+      font-size: 12px;
+    }
+    form {
       position: absolute;
-      top: 20px;
+      top: 50px;
       right: 20px;
+      z-index: 1000;
       background: white;
       padding: 15px;
       border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-      z-index: 1000;
-      max-width: 300px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
-    select, input, button {
+    label, input, select, button {
+      display: block;
+      margin-bottom: 8px;
       width: 100%;
-      margin: 5px 0;
     }
   </style>
 </head>
 <body>
+  <h2 style="margin-left: 10px">Verificación y reporte in situ del Muestreo de Validación CUT - serie temporal 1985 - 2023</h2>
 
-  <h4 style="padding: 10px;">
-    Verificación y reporte in situ del Muestreo de Validación CUT - serie temporal 1985 a 2023
-  </h4>
-
-  <label style="padding-left: 10px;">Año:
+  <div style="position:absolute; top:10px; left:10px; z-index:1000; background:white; padding:10px;">
+    Año:
     <select id="select-anyo"></select>
-  </label>
-
-  <div id="form-container">
-    <form id="form-reporte">
-      <label for="plotid">PlotID:</label>
-      <input type="text" id="plotid" required />
-
-      <label for="clase">Clase verificada:</label>
-      <input type="text" id="clase" required />
-
-      <label for="fecha">Fecha:</label>
-      <input type="date" id="fecha" required />
-
-      <label for="tecnico">Nombre del técnico:</label>
-      <input type="text" id="tecnico" required />
-
-      <label for="provincia">Dirección Provincial:</label>
-      <input type="text" id="provincia" required />
-
-      <label for="altitud">Altitud:</label>
-      <input type="text" id="altitud" required />
-
-      <label for="foto">Fotografía:</label>
-      <input type="file" id="foto" accept="image/*" required />
-
-      <button type="submit">Guardar reporte</button>
-      <button type="button" onclick="generarReportePDF()">Generar reporte PDF</button>
-    </form>
   </div>
+
+  <form id="form-reporte">
+    <label for="plotid">PlotID:</label>
+    <input type="text" id="plotid" required />
+
+    <label for="clase">Clase verificada:</label>
+    <input type="text" id="clase" required />
+
+    <label for="fecha">Fecha:</label>
+    <input type="date" id="fecha" required />
+
+    <label for="tecnico">Nombre del técnico:</label>
+    <input type="text" id="tecnico" required />
+
+    <label for="provincia">Dirección Provincial:</label>
+    <input type="text" id="provincia" required />
+
+    <label for="altitud">Altitud:</label>
+    <input type="text" id="altitud" required />
+
+    <label for="foto">Fotografía:</label>
+    <input type="file" id="foto" accept="image/*" required />
+
+    <button type="submit">Guardar reporte</button>
+    <button type="button" onclick="generarReportePDF()">Generar reporte PDF</button>
+  </form>
 
   <div id="map"></div>
 
-  <!-- Leaflet JS (sin atributo integrity) -->
+  <!-- Leaflet JS sin integridad -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <!-- jsPDF para generación de PDF -->
+  <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-  <!-- Tu script principal -->
+  <!-- Main JS como módulo -->
   <script type="module" src="main.js"></script>
 </body>
 </html>
