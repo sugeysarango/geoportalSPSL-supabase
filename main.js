@@ -1,120 +1,99 @@
-// ✅ main.js actualizado para cargar tus capas Supabase correctamente
+// main.js actualizado con geometrías corregidas y leyenda de 22 clases
 
 const supabaseUrl = 'https://kkjtytomvcfimovxllpj.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtranR5dG9tdmNmaW1vdnhsbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzMDQzMzgsImV4cCI6MjA2ODg4MDMzOH0.BWtig4Et9BLE2t9xno6JudoRho3xBCS4VjFL1h3TT-8';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // (tu key completa)
 
-// Iniciar mapa Leaflet
-const map = L.map('map').setView([-1.8312, -78.1834], 7);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; OpenStreetMap contributors'
-}).addTo(map);
-
-const headers = {
-  apikey: supabaseKey,
-  Authorization: `Bearer ${supabaseKey}`,
-};
-
-// Función para cargar capas desde Supabase REST API
-async function cargarCapa(nombreTabla, nombreCampo, estilo, popupCallback) {
-  const url = `${supabaseUrl}/rest/v1/${nombreTabla}?select=*`;
+// Funciones auxiliares para cargar capas
+async function cargarCapa(nombreTabla, nombreCapa, nombreColumnaGeom = 'geom') {
   try {
-    const response = await fetch(url, { headers });
-    const data = await response.json();
-    const capa = L.geoJSON(data, {
-      style: estilo,
-      onEachFeature: function (feature, layer) {
-        if (popupCallback) popupCallback(feature, layer);
-      }
-    });
-    capa.addTo(map);
-    capasBase[nombreTabla] = capa;
-    controlCapas.addOverlay(capa, nombreTabla);
-  } catch (error) {
-    console.error(`Error al cargar ${nombreTabla}:`, error);
-  }
-}
-
-const capasBase = {};
-const controlCapas = L.control.layers(null, null, { collapsed: false }).addTo(map);
-
-// Cargar capas vectoriales
-cargarCapa('ECOREGIONES_EC', 'NOMBRE', { color: 'green' }, (f, l) => {
-  l.bindPopup(`<b>Ecorregión:</b> ${f.properties.NOMBRE}`);
-});
-
-cargarCapa('LIMITE_PROVINCIAL_CONALI_CNE_2022_4326', 'PROVINCIA', { color: 'purple', weight: 2 }, (f, l) => {
-  l.bindPopup(`<b>Provincia:</b> ${f.properties.PROVINCIA}`);
-});
-
-cargarCapa('POBLADOS', 'nombre', { color: 'black', weight: 1 }, (f, l) => {
-  l.bindPopup(`<b>Poblado:</b> ${f.properties.nombre}`);
-});
-
-cargarCapa('RIOS_SIMPLES4326', 'NAM', { color: 'blue', weight: 1 }, (f, l) => {
-  l.bindPopup(`<b>Río:</b> ${f.properties.NAM}`);
-});
-
-// Cargar puntos validados (con leyenda de las 22 clases)
-async function cargarPuntos() {
-  const url = `${supabaseUrl}/rest/v1/base_puntos_validados_ec_gl_1985_2023?select=*`;
-  try {
-    const response = await fetch(url, { headers });
-    const data = await response.json();
-    const capa = L.geoJSON(data, {
-      pointToLayer: (feature, latlng) => {
-        const clase = feature.properties.clase2023 || 'Sin Información';
-        const color = coloresClases[clase] || 'gray';
-        return L.circleMarker(latlng, {
-          radius: 5,
-          fillColor: color,
-          color: '#000',
-          weight: 1,
-          fillOpacity: 0.8
-        });
+    const response = await fetch(`${supabaseUrl}/rest/v1/${nombreTabla}?select=*,${nombreColumnaGeom}`, {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
       },
-      onEachFeature: (feature, layer) => {
+    });
+    const data = await response.json();
+    const geojson = {
+      type: 'FeatureCollection',
+      features: data.map((row) => {
+        return {
+          type: 'Feature',
+          geometry: JSON.parse(row[nombreColumnaGeom]),
+          properties: row,
+        };
+      }),
+    };
+    const layer = L.geoJSON(geojson, {
+      onEachFeature: function (feature, layer) {
         const props = feature.properties;
-        let contenido = `<b>PlotID:</b> ${props.plotid}<br>`;
-        for (let y = 1985; y <= 2023; y++) {
-          if (props[`clase${y}`]) {
-            contenido += `<b>${y}:</b> ${props[`clase${y}`]}<br>`;
+        let contenido = `<strong>${nombreCapa}</strong><br>`;
+        for (const key in props) {
+          if (key !== nombreColumnaGeom && props[key]) {
+            contenido += `<b>${key}:</b> ${props[key]}<br>`;
           }
         }
         layer.bindPopup(contenido);
+      },
+      style: nombreTabla === 'LIMITE_PROVINCIAL_CONALI_CNE_2022_4326' ? {
+        color: '#3333cc', weight: 1.5, fillOpacity: 0.1
+      } : nombreTabla === 'ECOREGIONES_EC' ? {
+        color: '#66cc66', weight: 1.2, fillOpacity: 0.1
+      } : nombreTabla === 'RIOS_SIMPLES4326' ? {
+        color: '#3366cc', weight: 0.7
+      } : undefined,
+      pointToLayer: (feature, latlng) => {
+        return L.circleMarker(latlng, {
+          radius: 5,
+          fillColor: '#ff6600',
+          fillOpacity: 0.9,
+          color: '#fff',
+          weight: 1
+        });
       }
     });
-    capa.addTo(map);
-    capasBase['Puntos validados'] = capa;
-    controlCapas.addOverlay(capa, 'Puntos validados');
+    capas[nombreCapa] = layer;
+    layer.addTo(mapa);
   } catch (error) {
-    console.error('Error al cargar puntos validados:', error);
+    console.error(`Error al cargar ${nombreCapa}:`, error);
   }
 }
 
-// Diccionario de colores para las 22 clases
-const coloresClases = {
-  'Bosque': '#228B22',
-  'Pastos': '#BDB76B',
-  'Agricultura': '#FFFF00',
-  'Zona urbana': '#FF0000',
-  'Cuerpos de agua': '#1E90FF',
-  'Manglar': '#8B4513',
-  'Humedal': '#00CED1',
-  'Paramo': '#A9A9A9',
-  'Afloramientos rocosos': '#808080',
-  'Sin vegetación': '#F5DEB3',
-  'Bosque seco': '#CD853F',
-  'Zonas mineras': '#FFA500',
-  'Playas': '#FFFACD',
-  'Salinas': '#F08080',
-  'Cementerio': '#C0C0C0',
-  'Cultivo permanente': '#98FB98',
-  'Cultivo transitorio': '#EEE8AA',
-  'Suelo desnudo': '#DEB887',
-  'Zona industrial': '#D2691E',
-  'Zonas eriales': '#FAFAD2',
-  'Infraestructura': '#708090',
-  'Sin Información': '#D3D3D3'
-};
+// Inicializar mapa
+const mapa = L.map('map').setView([-1.5, -78.0], 6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
 
-cargarPuntos();
+const capas = {};
+
+// Cargar todas las capas necesarias con sus columnas geom
+cargarCapa('base_puntos_validados_ec_gl_1985_2023', 'Puntos Validados', 'geometry');
+cargarCapa('LIMITE_PROVINCIAL_CONALI_CNE_2022_4326', 'Provincias', 'geom');
+cargarCapa('ECOREGIONES_EC', 'Ecorregiones', 'geom');
+cargarCapa('POBLADOS', 'Poblados', 'geom');
+cargarCapa('RIOS_SIMPLES4326', 'Ríos', 'geom');
+
+// Control de capas
+const control = L.control.layers(null, capas, { collapsed: false }).addTo(mapa);
+
+// Leyenda (22 clases ejemplo, puedes personalizar colores)
+const clases = [
+  'Bosque Denso', 'Bosque Abierto', 'Matorral', 'Herbazal', 'Manglar', 'Humedal', 'Agricultura', 'Pastizal',
+  'Área Urbana', 'Infraestructura', 'Suelo Desnudo', 'Nieve', 'Cuerpo de Agua', 'Zona Glaciar',
+  'Bosque Plantado', 'Cosecha Reciente', 'Tala Selectiva', 'Área Minera', 'Zona en Recuperación', 'Parche Seco',
+  'No Observada', 'Sin Información'
+];
+const colores = [
+  '#006400', '#228B22', '#7CFC00', '#ADFF2F', '#2E8B57', '#66CDAA', '#FFD700', '#FFA500',
+  '#FF4500', '#A0522D', '#DEB887', '#FFFFFF', '#4682B4', '#B0E0E6',
+  '#32CD32', '#BDB76B', '#8FBC8F', '#A9A9A9', '#98FB98', '#CD853F',
+  '#999999', '#cccccc'
+];
+
+const leyenda = L.control({ position: 'bottomright' });
+leyenda.onAdd = function () {
+  const div = L.DomUtil.create('div', 'info legend');
+  clases.forEach((clase, i) => {
+    div.innerHTML += `<i style="background:${colores[i]}; width:18px; height:18px; float:left; margin-right:6px; opacity:0.9;"></i>${clase}<br>`;
+  });
+  return div;
+};
+leyenda.addTo(mapa);
