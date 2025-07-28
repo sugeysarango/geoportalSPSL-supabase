@@ -1,63 +1,89 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Geoportal de Validación CUT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <style>
-    #map { height: 90vh; }
-    .sidebar {
+    body { margin: 0; font-family: Arial; }
+    #map { height: 100vh; width: 100%; }
+    .leyenda {
       position: absolute;
-      top: 10px;
+      bottom: 10px;
       right: 10px;
+      z-index: 1000;
       background: white;
       padding: 10px;
-      border-radius: 6px;
-      z-index: 1000;
-      font-size: 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
     }
-    .legend-color {
+    .leyenda div { margin-bottom: 4px; }
+    .leyenda span {
       display: inline-block;
-      width: 12px;
-      height: 12px;
-      margin-right: 4px;
+      width: 14px;
+      height: 14px;
+      margin-right: 6px;
+      vertical-align: middle;
     }
-    #formulario input, #formulario button {
-      display: block;
+    .formulario {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 15px;
+      border-radius: 8px;
+      z-index: 1000;
+      width: 270px;
+    }
+    .formulario input, .formulario select {
       width: 100%;
-      margin-top: 5px;
+      margin-bottom: 8px;
     }
-    #formulario { margin-top: 10px; }
+    .formulario button {
+      width: 100%;
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
-
-  <h2>Verificación y reporte in situ del Muestreo de Validación CUT - serie temporal 1985 a 2023</h2>
-  <label for="select-anyo">Año:</label>
-  <select id="select-anyo"></select>
+  <div class="formulario">
+    <label>Año:
+      <select id="select-anyo"></select>
+    </label>
+    <label>PlotID:
+      <input type="text" id="plotid" />
+    </label>
+    <label>Clase verificada:
+      <input type="text" id="clase" />
+    </label>
+    <label>Fecha:
+      <input type="date" id="fecha" />
+    </label>
+    <label>Nombre del técnico:
+      <input type="text" id="tecnico" />
+    </label>
+    <label>Dirección Provincial:
+      <input type="text" id="direccion" />
+    </label>
+    <label>Altitud:
+      <input type="number" id="altitud" />
+    </label>
+    <label>Fotografía:
+      <input type="file" id="foto" />
+    </label>
+    <button onclick="guardarReporte()">Guardar reporte</button>
+    <button onclick="generarPDF()">Generar PDF</button>
+  </div>
 
   <div id="map"></div>
-
-  <div class="sidebar">
-    <strong>Leyenda</strong>
-    <div id="leyenda"></div>
-
-    <form id="formulario">
-      <strong>PlotID:</strong><input type="text" id="plotid" required>
-      <strong>Clase verificada:</strong><input type="text" id="clase" required>
-      <strong>Fecha:</strong><input type="date" id="fecha" required>
-      <strong>Nombre del técnico:</strong><input type="text" id="tecnico" required>
-      <strong>Dirección Provincial:</strong><input type="text" id="direccion" required>
-      <strong>Altitud:</strong><input type="text" id="altitud">
-      <strong>Fotografía:</strong><input type="file" id="foto">
-      <button type="button" onclick="guardarReporte()">Guardar reporte</button>
-      <button type="button" onclick="generarPDF()">Generar reporte PDF</button>
-    </form>
-  </div>
+  <div class="leyenda" id="leyenda"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script src="main.js"></script>
 </body>
 </html>
