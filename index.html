@@ -2,88 +2,86 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Geoportal de Validación CUT</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <title>Geoportal Validación CUT Ecuador</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
   <style>
-    body { margin: 0; font-family: Arial; }
-    #map { height: 100vh; width: 100%; }
-    .leyenda {
-      position: absolute;
-      bottom: 10px;
-      right: 10px;
-      z-index: 1000;
-      background: white;
-      padding: 10px;
-      border-radius: 8px;
-      font-size: 12px;
-      max-height: 300px;
-      overflow-y: auto;
-    }
-    .leyenda div { margin-bottom: 4px; }
-    .leyenda span {
-      display: inline-block;
-      width: 14px;
-      height: 14px;
-      margin-right: 6px;
-      vertical-align: middle;
-    }
-    .formulario {
+    #map { height: 90vh; width: 100%; }
+    #leyenda {
       position: absolute;
       top: 10px;
       left: 10px;
-      background: rgba(255, 255, 255, 0.95);
-      padding: 15px;
-      border-radius: 8px;
+      background: white;
+      padding: 10px;
       z-index: 1000;
-      width: 270px;
+      max-height: 80vh;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      border-radius: 6px;
     }
-    .formulario input, .formulario select {
-      width: 100%;
-      margin-bottom: 8px;
+    #reporte {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: white;
+      padding: 10px;
+      z-index: 1000;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      width: 300px;
     }
-    .formulario button {
-      width: 100%;
-      margin-top: 4px;
+    #select-anyo {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 1000;
+    }
+    .leyenda-color {
+      display: flex;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .leyenda-color span {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      margin-right: 6px;
+      border: 1px solid #000;
     }
   </style>
 </head>
 <body>
-  <div class="formulario">
-    <label>Año:
-      <select id="select-anyo"></select>
-    </label>
-    <label>PlotID:
-      <input type="text" id="plotid" />
-    </label>
-    <label>Clase verificada:
-      <input type="text" id="clase" />
-    </label>
-    <label>Fecha:
-      <input type="date" id="fecha" />
-    </label>
-    <label>Nombre del técnico:
-      <input type="text" id="tecnico" />
-    </label>
-    <label>Dirección Provincial:
-      <input type="text" id="direccion" />
-    </label>
-    <label>Altitud:
-      <input type="number" id="altitud" />
-    </label>
-    <label>Fotografía:
-      <input type="file" id="foto" />
-    </label>
-    <button onclick="guardarReporte()">Guardar reporte</button>
-    <button onclick="generarPDF()">Generar PDF</button>
+  <h2 style="text-align:center">Verificación y reporte in situ del Muestreo de Validación CUT - serie temporal 1985 a 2023</h2>
+
+  <select id="select-anyo"></select>
+  <div id="map"></div>
+
+  <div id="leyenda">
+    <h4>Leyenda de Coberturas</h4>
+    <div id="leyenda-colores"></div>
+    <hr>
+    <label><input type="checkbox" id="chkProvincias" checked> Provincias</label><br>
+    <label><input type="checkbox" id="chkEcorregiones" checked> Ecorregiones</label><br>
+    <label><input type="checkbox" id="chkRios" checked> Ríos</label><br>
+    <label><input type="checkbox" id="chkPoblados" checked> Poblados</label><br>
+    <label><input type="checkbox" id="chkPuntos" checked> Puntos Validados</label>
   </div>
 
-  <div id="map"></div>
-  <div class="leyenda" id="leyenda"></div>
+  <div id="reporte">
+    <h4>Formulario de Verificación</h4>
+    <form id="form-reporte">
+      <label for="plotid">PlotID:</label>
+      <input type="text" id="plotid" name="plotid" required><br>
+      <label for="cobertura_actual">Cobertura Actual:</label>
+      <input type="text" id="cobertura_actual" name="cobertura_actual" required><br>
+      <label for="observaciones">Observaciones:</label>
+      <textarea id="observaciones" name="observaciones"></textarea><br>
+      <button type="button" onclick="generarPDF()">Imprimir PDF</button>
+    </form>
+  </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script src="main.js"></script>
 </body>
 </html>
