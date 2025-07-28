@@ -1,56 +1,40 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Geoportal de Validación CUT</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha512-sA+z0pZLwQvFX3zdUQd8ItaTzVYVr7U2xOCCmZt9bFkhxyn1ZcMEw1+l8CTvLkTzAaRhIxDdn0Zk+g7x8Z8yMw==" crossorigin="" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-sBfF1/K/WQw9lWQtMTYX0pRvQT6S0clT5AeQmyOQVoo=" crossorigin="">
   <style>
     #map {
       height: 100vh;
       width: 100vw;
     }
-
-    .formulario {
+    .formulario, .leyenda, .controles-capas {
       position: absolute;
+      z-index: 1000;
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      font-family: sans-serif;
+    }
+    .formulario {
       top: 60px;
       right: 10px;
-      z-index: 1000;
-      background: white;
-      padding: 10px;
-      border-radius: 5px;
       width: 250px;
-      font-family: sans-serif;
-      font-size: 14px;
+      font-size: 13px;
     }
-
     .leyenda {
-      position: absolute;
-      bottom: 30px;
+      bottom: 10px;
       right: 10px;
-      z-index: 1000;
-      background: white;
-      padding: 10px;
-      border-radius: 5px;
-      font-family: sans-serif;
-      font-size: 12px;
       max-height: 300px;
       overflow-y: auto;
+      font-size: 12px;
     }
-
     .controles-capas {
-      position: absolute;
       top: 60px;
       left: 10px;
-      z-index: 1000;
-      background: white;
-      padding: 10px;
-      border-radius: 5px;
-      font-family: sans-serif;
       font-size: 13px;
     }
   </style>
@@ -71,43 +55,27 @@
 
   <div class="formulario">
     <form id="formulario">
-      <label for="plotid">PlotID:</label>
-      <input type="text" id="plotid" required /><br />
-
-      <label for="clase">Clase verificada:</label>
-      <input type="text" id="clase" required /><br />
-
-      <label for="fecha">Fecha:</label>
-      <input type="date" id="fecha" required /><br />
-
-      <label for="tecnico">Nombre del técnico:</label>
-      <input type="text" id="tecnico" required /><br />
-
-      <label for="provincia">Dirección Provincial:</label>
-      <input type="text" id="provincia" required /><br />
-
-      <label for="altitud">Altitud:</label>
-      <input type="text" id="altitud" required /><br />
-
-      <label for="foto">Fotografía:</label>
-      <input type="file" id="foto" accept="image/*" required /><br />
-
-      <button type="submit">Guardar reporte</button>
-      <button type="button" onclick="generarReportePDF()">Generar reporte PDF</button>
+      <label>PlotID:</label><input type="text" id="plotid" required /><br>
+      <label>Cobertura actual:</label><input type="text" id="cobertura" required /><br>
+      <label>Fecha:</label><input type="date" id="fecha" required /><br>
+      <label>Altitud:</label><input type="text" id="altitud" required /><br>
+      <label>Dirección Provincial:</label><input type="text" id="direccion" required /><br>
+      <label>Provincia:</label><input type="text" id="provincia" required /><br>
+      <label>Técnico:</label><input type="text" id="tecnico" required /><br>
+      <label>Observación:</label><input type="text" id="observacion" /><br>
+      <label>Fotografía:</label><input type="file" id="foto" accept="image/*" /><br>
+      <button type="button" id="generarPDF">Generar PDF</button>
     </form>
   </div>
 
-  <div class="leyenda" id="leyenda-clases">
-    <!-- Aquí se inyectará la leyenda desde JS -->
-  </div>
+  <div class="leyenda" id="leyenda-clases"></div>
 
   <div id="map"></div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha512-kxZu/q71IzznUJpbNLM4U4sx8pLJKFtx9TLV6RKmKCVTKYQOjQjJd9AKkT3Y1w9Zs2FqzRVbnjJgBD5rN8fyDA==" crossorigin=""></script>
-  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-  <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script type="module" src="main.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-o9N1jE5wQq9N8z4CwiYJ5DRHIGia0M8VrTLJ3iHFHSA="
+    crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="main.js"></script>
 </body>
-
 </html>
