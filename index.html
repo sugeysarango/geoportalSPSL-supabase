@@ -4,64 +4,97 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Geoportal de Validación CUT</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
   <style>
-    #map { height: 95vh; }
+    body { margin: 0; font-family: Arial, sans-serif; }
+    #map { height: 100vh; }
     .form-container {
       position: absolute;
-      top: 60px;
+      top: 50px;
       right: 10px;
-      z-index: 1000;
       background: white;
       padding: 10px;
       border-radius: 5px;
-      width: 300px;
+      z-index: 1000;
+      width: 260px;
       box-shadow: 0 0 10px rgba(0,0,0,0.2);
     }
-    .leyenda-cobertura {
+    .form-container input,
+    .form-container textarea,
+    .form-container button {
+      width: 100%;
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+    .checkboxes {
       position: absolute;
-      bottom: 10px;
+      top: 10px;
+      left: 10px;
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      z-index: 1000;
+      font-size: 14px;
+    }
+    .legend {
+      position: absolute;
+      bottom: 20px;
       right: 10px;
       background: white;
-      padding: 8px;
-      font-size: 13px;
+      padding: 10px;
       border-radius: 5px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.2);
+      font-size: 13px;
+      z-index: 1000;
+    }
+    .legend div {
+      margin-bottom: 4px;
+    }
+    .legend span {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-right: 6px;
+      vertical-align: middle;
     }
   </style>
 </head>
 <body>
-  <h2 style="text-align: center;">
-    Verificación y reporte in situ del Muestreo de Validación CUT – serie temporal 1985 - 2023
-  </h2>
 
-  <div id="map"></div>
+<h2 style="padding:10px;">Verificación y reporte in situ del Muestreo de Validación CUT – serie temporal 1985 - 2023</h2>
 
-  <div class="form-container">
-    <form id="formulario">
-      <label>PlotID: <input type="text" id="plotid" /></label><br />
-      <label>Cobertura actual: <input type="text" id="cobertura" /></label><br />
-      <label>Fecha: <input type="date" id="fecha" /></label><br />
-      <label>Altitud: <input type="text" id="altitud" /></label><br />
-      <label>Dirección Provincial: <input type="text" id="direccion" /></label><br />
-      <label>Provincia: <input type="text" id="provincia" /></label><br />
-      <label>Técnico: <input type="text" id="tecnico" /></label><br />
-      <label>Observación: <input type="text" id="observacion" /></label><br />
-      <label>Fotografía: <input type="file" id="foto" /></label><br /><br />
-      <button type="button" onclick="generarPDF()">Generar PDF</button>
-    </form>
-  </div>
+<div id="map"></div>
 
-  <div class="leyenda-cobertura">
-    <strong>Leyenda de cobertura:</strong><br />
-    <span style="color: green;">■</span> Bosque<br />
-    <span style="color: orange;">■</span> Agrícola<br />
-    <span style="color: red;">■</span> Urbano<br />
-    <span style="color: blue;">■</span> Humedal<br />
-    <span style="color: gray;">■</span> Sin Información
-  </div>
+<div class="checkboxes">
+  <label><input type="checkbox" id="check_provincias" checked> Provincias</label><br>
+  <label><input type="checkbox" id="check_ecoregiones" checked> Ecorregiones</label><br>
+  <label><input type="checkbox" id="check_poblados" checked> Poblados</label><br>
+  <label><input type="checkbox" id="check_rios" checked> Ríos</label><br>
+  <label><input type="checkbox" id="check_puntos" checked> Puntos validados</label>
+</div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="main.js"></script>
+<div class="form-container">
+  <label>PlotID:<input type="text" id="plotid"></label>
+  <label>Cobertura actual:<input type="text" id="cobertura"></label>
+  <label>Fecha:<input type="date" id="fecha"></label>
+  <label>Altitud:<input type="text" id="altitud"></label>
+  <label>Dirección Provincial:<input type="text" id="direccion"></label>
+  <label>Provincia:<input type="text" id="provincia"></label>
+  <label>Técnico:<input type="text" id="tecnico"></label>
+  <label>Observación:<input type="text" id="observacion"></label>
+  <label>Fotografía:<input type="file" id="foto"></label>
+  <button onclick="generarPDF()">Generar PDF</button>
+</div>
+
+<div class="legend">
+  <strong>Leyenda de cobertura:</strong>
+  <div><span style="background:#228B22;"></span> Bosque</div>
+  <div><span style="background:#FFA500;"></span> Agrícola</div>
+  <div><span style="background:#DC143C;"></span> Urbano</div>
+  <div><span style="background:#00CED1;"></span> Humedal</div>
+  <div><span style="background:#D3D3D3;"></span> Sin Información</div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="main.js"></script>
 </body>
 </html>
