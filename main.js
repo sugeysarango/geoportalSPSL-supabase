@@ -55,11 +55,15 @@ async function cargarCapa(nombreTabla, columnaGeom, nombreVisor) {
   const res = await fetch(`${supabaseUrl}/rest/v1/${nombreTabla}?select=*,${columnaGeom}`, { headers });
   const data = await res.json();
   if (!Array.isArray(data)) return console.error(`❌ Error al cargar ${nombreVisor}:`, data);
-  capasGeojson[nombreTabla] = L.geoJSON(data.map(f => ({
-    type: 'Feature',
-    geometry: JSON.parse(f[columnaGeom]),
-    properties: f
-  })), {
+
+  capasGeojson[nombreTabla] = L.geoJSON(data.map(f => {
+    const geom = f[columnaGeom];
+    return {
+      type: 'Feature',
+      geometry: typeof geom === 'string' ? JSON.parse(geom) : geom,
+      properties: f
+    };
+  }), {
     onEachFeature: (feature, layer) => {
       let popup = '';
       for (const key in feature.properties) {
