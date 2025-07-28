@@ -135,3 +135,4 @@ window.addEventListener('DOMContentLoaded', () => {
     radius: 3, fillColor: 'orange', fillOpacity: 0.7, color: 'gray', weight: 0.5
   }, 'plotid');
 });
+Fix main.js content
