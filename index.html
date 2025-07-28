@@ -1,45 +1,72 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Geoportal de Validación CUT</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <style>
-        body { margin: 0; font-family: Arial, sans-serif; }
-        #map { height: 100vh; width: 100%; }
-        .formulario { position: absolute; top: 50px; right: 30px; z-index: 1000; background: white; padding: 10px; border-radius: 5px; }
-        .leyenda { position: absolute; bottom: 20px; right: 30px; background: white; padding: 10px; font-size: 13px; border-radius: 5px; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Geoportal de Validación CUT</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2/css/leaflet-sidebar.min.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
+  <style>
+    body, html { margin: 0; padding: 0; height: 100%; }
+    #map { height: 100vh; width: 100%; }
+    .formulario {
+      position: absolute;
+      top: 70px;
+      right: 10px;
+      background: white;
+      padding: 10px;
+      z-index: 1000;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+    .leyenda {
+      position: absolute;
+      bottom: 20px;
+      right: 10px;
+      background: white;
+      padding: 10px;
+      z-index: 1000;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+  </style>
 </head>
 <body>
-    <h2 style="padding-left: 10px;">Verificación y reporte in situ del Muestreo de Validación CUT – serie temporal 1985 - 2023</h2>
-    <div id="map"></div>
 
-    <div class="formulario">
-        <label>PlotID:<input type="text" id="plotId" /></label><br/>
-        <label>Cobertura actual:<input type="text" id="cobertura" /></label><br/>
-        <label>Fecha:<input type="date" id="fecha" /></label><br/>
-        <label>Altitud:<input type="text" id="altitud" /></label><br/>
-        <label>Dirección Provincial:<input type="text" id="direccion" /></label><br/>
-        <label>Provincia:<input type="text" id="provincia" /></label><br/>
-        <label>Técnico:<input type="text" id="tecnico" /></label><br/>
-        <label>Observación:<input type="text" id="observacion" /></label><br/>
-        <label>Fotografía:<input type="file" id="foto" /></label><br/>
-        <button id="generarPDF">Generar PDF</button>
-    </div>
+  <h2 style="margin-left: 10px;">✅ Verificación y reporte in situ del Muestreo de Validación CUT – serie temporal 1985 - 2023</h2>
 
-    <div class="leyenda">
-        <strong>Leyenda de cobertura:</strong><br/>
-        <span style="color: green;">■</span> Bosque<br/>
-        <span style="color: orange;">■</span> Agrícola<br/>
-        <span style="color: red;">■</span> Urbano<br/>
-        <span style="color: blue;">■</span> Humedal<br/>
-        <span style="color: lightgray;">■</span> Sin Información
-    </div>
+  <!-- Div donde se renderiza el mapa -->
+  <div id="map"></div>
 
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="main.js"></script>
+  <!-- Formulario de reporte -->
+  <div class="formulario">
+    <label>PlotID: <input type="text" id="plotid" /></label><br/>
+    <label> Cobertura actual: <input type="text" id="cobertura" /></label><br/>
+    <label>Fecha: <input type="date" id="fecha" /></label><br/>
+    <label>Altitud: <input type="text" id="altitud" /></label><br/>
+    <label>Dirección Provincial: <input type="text" id="direccion" /></label><br/>
+    <label>Provincia: <input type="text" id="provincia" /></label><br/>
+    <label>Técnico: <input type="text" id="tecnico" /></label><br/>
+    <label>Observación: <input type="text" id="observacion" /></label><br/>
+    <label>Fotografía: <input type="file" id="foto" /></label><br/>
+    <button onclick="generarPDF()">Generar PDF</button>
+  </div>
+
+  <!-- Leyenda -->
+  <div class="leyenda">
+    <strong>Leyenda de cobertura:</strong><br/>
+    <span style="color:green;">■</span> Bosque<br/>
+    <span style="color:orange;">■</span> Agrícola<br/>
+    <span style="color:red;">■</span> Urbano<br/>
+    <span style="color:blue;">■</span> Humedal<br/>
+    <span style="color:lightgray;">■</span> Sin Información<br/>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2/js/leaflet-sidebar.min.js"></script>
+  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>
