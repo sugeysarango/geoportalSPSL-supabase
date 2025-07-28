@@ -1,210 +1,149 @@
-// main.js completo para el Geoportal con Supabase y Leaflet + generación de PDF con fotos
+// main.js
 
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+import { jsPDF } from "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
 
-// 1. Configuración de Supabase
-const SUPABASE_URL = 'https://kkjtytomvcfimovxllpj.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtranR5dG9tdmNmaW1vdnhsbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzMDQzMzgsImV4cCI6MjA2ODg4MDMzOH0.BWtig4Et9BLE2t9xno6JudoRho3xBCS4VjFL1h3TT-8';
+let map = L.map("map").setView([-1.8312, -78.1834], 6);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19,
+}).addTo(map);
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+// Variables globales para capas
+let capaProvincias, capaEcorregiones, capaPoblados, capaRios, capaPuntos;
 
-// 2. Lista de años
-const años = Array.from({ length: 2023 - 1985 + 1 }, (_, i) => 1985 + i);
+// Función para cargar GeoJSON desde Supabase
+async function cargarCapa(nombreTabla, estilo, onEachFeature) {
+  const url = `https://kkjtytomvcfimovxllpj.supabase.co/rest/v1/${nombreTabla}?select=*`;
+  const response = await fetch(url, {
+    headers: {
+      apikey:
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtranR5dG9tdmNmaW1vdnhsbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzMDQzMzgsImV4cCI6MjA2ODg4MDMzOH0.BWtig4Et9BLE2t9xno6JudoRho3xBCS4VjFL1h3TT-8",
+      Authorization:
+        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtranR5dG9tdmNmaW1vdnhsbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzMDQzMzgsImV4cCI6MjA2ODg4MDMzOH0.BWtig4Et9BLE2t9xno6JudoRho3xBCS4VjFL1h3TT-8",
+    },
+  });
 
-// 3. Colores por clase (ampliado)
-const colores = {
-  'Bosque Abierto': '#228B22', 'Bosque Denso': '#006400', 'Pasto': '#7CFC00',
-  'Herbazales de Paramo': '#ADFF2F', 'Agricultura no especifica': '#FFD700',
-  'Cuerpos de Agua': '#00BFFF', 'Infraestructura': '#A0522D', 'Manglar': '#2E8B57',
-  'Matorral Seco': '#CD853F', 'Matorral Humedo': '#8B4513', 'Nieve o Hielo': '#F0F8FF',
-  'No Observada': '#D3D3D3', 'Otros': '#B0C4DE', 'Plantación Forestal': '#556B2F',
-  'Rastrojo': '#DAA520', 'Río': '#1E90FF', 'Roca Desnuda': '#808080',
-  'Sin Informacion': '#A9A9A9', 'Suelo Desnudo': '#F5DEB3', 'Urbanización': '#B22222',
-  'Vegetación Herbácea': '#9ACD32', 'Zonas Agropecuarias': '#FFDAB9'
-};
-
-let mapa;
-const capas = {}; // Guarda las capas activas
-
-function initMapa() {
-  mapa = L.map('map').setView([-1.5, -78.5], 6);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(mapa);
-
-  // Añadir leyenda
-  const legend = L.control({ position: 'bottomright' });
-  legend.onAdd = () => {
-    const div = L.DomUtil.create('div', 'info legend');
-    for (const clase in colores) {
-      div.innerHTML += `<i style="background:${colores[clase]}"></i> ${clase}<br>`;
-    }
-    return div;
+  const data = await response.json();
+  const geojson = {
+    type: "FeatureCollection",
+    features: data.map((d) => ({
+      type: "Feature",
+      geometry: JSON.parse(d.geom),
+      properties: d,
+    })),
   };
-  legend.addTo(mapa);
-}
-
-function initSelector() {
-  const select = document.getElementById('select-anyo');
-  años.forEach(a => {
-    const option = document.createElement('option');
-    option.value = a;
-    option.textContent = a;
-    select.appendChild(option);
-  });
-  select.addEventListener('change', e => cargarPuntos(+e.target.value));
-}
-
-function cargarPuntos(año) {
-  if (capas.puntos) mapa.removeLayer(capas.puntos);
-
-  const url = `${SUPABASE_URL}/rest/v1/puntos_validos_geo?select=plotid,cut${año},geojson`;
-  fetch(url, {
-    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
-  })
-  .then(res => res.json())
-  .then(data => {
-    const features = data.map(d => ({
-      type: 'Feature', geometry: d.geojson,
-      properties: { plotid: d.plotid, clase: d[`cut${año}`] }
-    }));
-    capas.puntos = L.geoJSON(features, {
-      pointToLayer: (f, latlng) => L.circleMarker(latlng, {
-        radius: 4, fillColor: colores[f.properties.clase] || '#000',
-        color: '#000', weight: 0.5, fillOpacity: 0.8
-      }),
-      onEachFeature: (f, layer) => {
-        layer.bindPopup(`PlotID: ${f.properties.plotid}<br>Clase: ${f.properties.clase}`);
-        layer.on('click', () => {
-          document.getElementById('plotid').value = f.properties.plotid;
-        });
-      }
-    }).addTo(mapa);
-    mapa.fitBounds(capas.puntos.getBounds());
+  return L.geoJSON(geojson, {
+    style,
+    onEachFeature,
+    pointToLayer: estilo.pointToLayer,
   });
 }
 
-function cargarGeoJSON(tabla, nombre, estilo, campoPopup) {
-  const url = `${SUPABASE_URL}/rest/v1/${tabla}?select=${campoPopup},geom`;
-  fetch(url, {
-    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
-  })
-  .then(res => res.json())
-  .then(data => {
-    const features = data.map(d => ({
-      type: 'Feature', geometry: d.geom,
-      properties: { [campoPopup]: d[campoPopup] }
-    }));
-    let capa;
-    if (tabla === 'POBLADOS') {
-      capa = L.geoJSON(features, {
-        pointToLayer: (f, latlng) => L.circleMarker(latlng, {
-          radius: 3, color: 'black', fillOpacity: 0.6
-        }),
-        onEachFeature: (f, l) => l.bindPopup(`${f.properties[campoPopup]}`)
-      });
+function toggleCapa(checkboxId, capa) {
+  document.getElementById(checkboxId).addEventListener("change", (e) => {
+    if (e.target.checked) {
+      capa.addTo(map);
     } else {
-      capa = L.geoJSON(features, {
-        style: estilo,
-        onEachFeature: (f, l) => l.bindPopup(`${f.properties[campoPopup]}`)
-      });
+      map.removeLayer(capa);
     }
-    capas[tabla] = capa.addTo(mapa);
   });
 }
 
-const form = document.getElementById('form-reporte');
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const plotid = document.getElementById('plotid').value;
-  const clase = document.getElementById('clase').value;
-  const fecha = document.getElementById('fecha').value;
-  const tecnico = document.getElementById('tecnico').value;
-  const provincia = document.getElementById('provincia').value;
-  const altitud = document.getElementById('altitud').value;
-  const fotoInput = document.getElementById('foto');
-  const foto = fotoInput.files[0];
-
-  if (!plotid || !clase || !fecha || !tecnico || !provincia || !altitud || !foto) {
-    alert('Por favor, completa todos los campos antes de guardar.');
-    return;
-  }
-
-  try {
-    const filePath = `reportes_fotos/${plotid}_${Date.now()}.jpg`;
-    const { data: uploadData, error: uploadError } = await supabase.storage.from('reportes_fotos').upload(filePath, foto);
-
-    if (uploadError) throw uploadError;
-
-    const imageUrl = `${SUPABASE_URL}/storage/v1/object/public/${uploadData.fullPath}`;
-
-    const { data, error } = await supabase.from('reportes_in_situ').insert([
-      { plotid, clase_verificada: clase, fecha_verificacion: fecha, tecnico, provincia, altitud, foto_url: imageUrl }
-    ]);
-
-    if (error) throw error;
-
-    alert('¡Reporte guardado correctamente!');
-    form.reset();
-  } catch (err) {
-    console.error('Error al guardar el reporte:', err);
-    alert('Hubo un error al guardar el reporte. Revisa la consola.');
-  }
-});
-
-async function generarReportePDF() {
-  const hoy = new Date().toISOString().split('T')[0];
-  const { data: reportes, error } = await supabase
-    .from('reportes_in_situ')
-    .select('*')
-    .eq('fecha_verificacion', hoy);
-
-  if (error) {
-    alert('Error al cargar los reportes del día');
-    return;
-  }
-
-  const pdf = new jsPDF();
-  let y = 10;
-
-  for (const r of reportes) {
-    pdf.text(`PlotID: ${r.plotid}`, 10, y);
-    pdf.text(`Clase: ${r.clase_verificada}`, 10, y += 7);
-    pdf.text(`Técnico: ${r.tecnico}`, 10, y += 7);
-    pdf.text(`Provincia: ${r.provincia}`, 10, y += 7);
-    pdf.text(`Altitud: ${r.altitud}`, 10, y += 7);
-    pdf.text(`Fecha: ${r.fecha_verificacion}`, 10, y += 7);
-
-    const img = await fetch(r.foto_url).then(res => res.blob()).then(blob => {
-      return new Promise(resolve => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.readAsDataURL(blob);
-      });
-    });
-
-    pdf.addImage(img, 'JPEG', 120, y - 35, 60, 45);
-    y += 60;
-
-    if (y > 260) {
-      pdf.addPage();
-      y = 10;
-    }
-  }
-
-  pdf.save(`Reporte_verificacion_${hoy}.pdf`);
+function crearLeyenda(clases) {
+  const leyenda = document.getElementById("leyenda-clases");
+  leyenda.innerHTML = "<b>Leyenda:</b><br>";
+  clases.forEach((c) => {
+    leyenda.innerHTML += `<div><span style="background:${c.color};width:12px;height:12px;display:inline-block;margin-right:4px"></span>${c.nombre}</div>`;
+  });
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-  initMapa();
-  initSelector();
-  cargarPuntos(años[0]);
+function generarReportePDF() {
+  const clase = document.getElementById("clase").value;
+  const fecha = document.getElementById("fecha").value;
+  const tecnico = document.getElementById("tecnico").value;
+  const provincia = document.getElementById("provincia").value;
+  const altitud = document.getElementById("altitud").value;
+  const plotid = document.getElementById("plotid").value;
+  const foto = document.getElementById("foto").files[0];
 
-  cargarGeoJSON('LIMITE_PROVINCIAL_CONALI_CNE_2022_4326', 'Provincias', { color: 'red', weight: 2 }, 'PROVINCIA');
-  cargarGeoJSON('POBLADOS', 'Poblados', {}, 'nombre');
-  cargarGeoJSON('ECOREGIONES_EC', 'Ecorregiones', { color: 'green', weight: 1, fillOpacity: 0.4 }, 'NOMBRE');
-  cargarGeoJSON('RIOS_SIMPLES4326', 'Ríos', { color: 'blue', weight: 1 }, 'NAM');
-  cargarGeoJSON('base_puntos_validados_ec_gl_1985_2023', 'Puntos validados', {
-    radius: 3, fillColor: 'orange', fillOpacity: 0.7, color: 'gray', weight: 0.5
-  }, 'plotid');
-});
+  const doc = new jsPDF();
+  doc.setFontSize(12);
+  doc.text(`PlotID: ${plotid}`, 10, 10);
+  doc.text(`Clase verificada: ${clase}`, 10, 20);
+  doc.text(`Fecha: ${fecha}`, 10, 30);
+  doc.text(`Técnico: ${tecnico}`, 10, 40);
+  doc.text(`Provincia: ${provincia}`, 10, 50);
+  doc.text(`Altitud: ${altitud}`, 10, 60);
+
+  if (foto) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      doc.addImage(e.target.result, "JPEG", 10, 70, 100, 75);
+      doc.save(`Reporte_${plotid}.pdf`);
+    };
+    reader.readAsDataURL(foto);
+  } else {
+    doc.save(`Reporte_${plotid}.pdf`);
+  }
+}
+
+// Inicialización de capas
+(async () => {
+  capaProvincias = await cargarCapa("LIMITE_PROVINCIAL_CONALI_CNE_2022_4326", {
+    color: "red",
+    weight: 1,
+  }, (feature, layer) => {
+    layer.bindPopup(`Provincia: ${feature.properties.dpa_despro}`);
+  });
+  capaEcorregiones = await cargarCapa("ecoregiones_geo", {
+    color: "green",
+    weight: 1,
+  }, (feature, layer) => {
+    layer.bindPopup(`Ecorregión: ${feature.properties.ecoregion}`);
+  });
+  capaPoblados = await cargarCapa("POBLADOS", {
+    pointToLayer: (f, latlng) => L.circleMarker(latlng, { radius: 3, color: "black" }),
+  }, (feature, layer) => {
+    layer.bindPopup(`Poblado: ${feature.properties.nombre}`);
+  });
+  capaRios = await cargarCapa("RIOS", {
+    color: "blue",
+    weight: 0.8,
+  }, (feature, layer) => {
+    layer.bindPopup(`Río`);
+  });
+  capaPuntos = await cargarCapa("base_puntos_validados_ec_gl_1985_2023", {
+    pointToLayer: (f, latlng) => L.circleMarker(latlng, {
+      radius: 5,
+      fillColor: "orange",
+      fillOpacity: 0.7,
+      color: "black",
+      weight: 1,
+    }),
+  }, (feature, layer) => {
+    layer.on("click", () => {
+      document.getElementById("plotid").value = feature.properties.plotid;
+    });
+    layer.bindPopup(`Clase: ${feature.properties.clase_2023}`);
+  });
+
+  capaProvincias.addTo(map);
+  capaEcorregiones.addTo(map);
+  capaPoblados.addTo(map);
+  capaRios.addTo(map);
+  capaPuntos.addTo(map);
+
+  toggleCapa("chkProvincias", capaProvincias);
+  toggleCapa("chkEcorregiones", capaEcorregiones);
+  toggleCapa("chkPoblados", capaPoblados);
+  toggleCapa("chkRios", capaRios);
+  toggleCapa("chkPuntos", capaPuntos);
+
+  crearLeyenda([
+    { nombre: "Bosque", color: "#006400" },
+    { nombre: "Agrícola", color: "#FFD700" },
+    { nombre: "Urbano", color: "#FF0000" },
+    { nombre: "Humedal", color: "#00FFFF" },
+    { nombre: "Sin información", color: "#999999" },
+    { nombre: "Otro", color: "#FFA500" },
+  ]);
+})();
