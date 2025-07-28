@@ -1,148 +1,120 @@
-// main.js completo con 22 clases de cobertura, capas base y popups informativos
+// ✅ main.js actualizado para cargar tus capas Supabase correctamente
 
-// 1. Configuración de Supabase
-const SUPABASE_URL = 'https://kkjtytomvcfimovxllpj.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtranR5dG9tdmNmaW1vdnhsbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzMDQzMzgsImV4cCI6MjA2ODg4MDMzOH0.BWtig4Et9BLE2t9xno6JudoRho3xBCS4VjFL1h3TT-8';
+const supabaseUrl = 'https://kkjtytomvcfimovxllpj.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtranR5dG9tdmNmaW1vdnhsbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzMDQzMzgsImV4cCI6MjA2ODg4MDMzOH0.BWtig4Et9BLE2t9xno6JudoRho3xBCS4VjFL1h3TT-8';
 
-// 2. Lista de años disponibles
-const años = Array.from({ length: 2023 - 1985 + 1 }, (_, i) => 1985 + i);
+// Iniciar mapa Leaflet
+const map = L.map('map').setView([-1.8312, -78.1834], 7);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
 
-// 3. Colores por clase de cobertura
-const colores = {
-  "Bosque Abierto": "#006400",
-  "Bosque Denso": "#228B22",
-  "Matorral seco": "#C2B280",
-  "Matorral húmedo": "#A2CD5A",
-  "Herbazal seco": "#BDB76B",
-  "Herbazal húmedo": "#9ACD32",
-  "Herbazales de páramo": "#DAA520",
-  "Manglar": "#2E8B57",
-  "Palmar": "#556B2F",
-  "Pasto": "#7CFC00",
-  "Cultivo anual": "#FFD700",
-  "Cultivo perenne": "#FFA500",
-  "Cultivo de arroz": "#F0E68C",
-  "Cultivo de caña": "#CD853F",
-  "Pastizal con cultivo": "#EEE8AA",
-  "Área urbana": "#A9A9A9",
-  "Infraestructura": "#D3D3D3",
-  "Zona sin vegetación": "#F5F5F5",
-  "Cuerpo de agua": "#1E90FF",
-  "Nieve / Glaciar": "#FFFFFF",
-  "No Observada": "#FF69B4",
-  "Sin Información": "#808080"
+const headers = {
+  apikey: supabaseKey,
+  Authorization: `Bearer ${supabaseKey}`,
 };
 
-let mapa;
-const capas = {};
-
-// 4. Inicializar el mapa
-function initMapa() {
-  mapa = L.map('map').setView([-1.5, -78.5], 6);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(mapa);
-}
-
-// 5. Inicializar selector de año
-function initSelector() {
-  const select = document.getElementById('select-anyo');
-  años.forEach(a => {
-    const option = document.createElement('option');
-    option.value = a;
-    option.textContent = a;
-    select.appendChild(option);
-  });
-  select.addEventListener('change', e => cargarPuntos(+e.target.value));
-}
-
-// 6. Cargar puntos validados por año
-function cargarPuntos(año) {
-  if (capas.puntos) mapa.removeLayer(capas.puntos);
-
-  const url = `${SUPABASE_URL}/rest/v1/base_puntos_validados_ec_gl_1985_2023?select=plotid,cut${año},geometry`;
-  fetch(url, {
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`
-    }
-  })
-  .then(res => res.json())
-  .then(data => {
-    const features = data.map(d => ({
-      type: 'Feature',
-      geometry: JSON.parse(d.geometry),
-      properties: {
-        plotid: d.plotid,
-        clase: d[`cut${año}`]
+// Función para cargar capas desde Supabase REST API
+async function cargarCapa(nombreTabla, nombreCampo, estilo, popupCallback) {
+  const url = `${supabaseUrl}/rest/v1/${nombreTabla}?select=*`;
+  try {
+    const response = await fetch(url, { headers });
+    const data = await response.json();
+    const capa = L.geoJSON(data, {
+      style: estilo,
+      onEachFeature: function (feature, layer) {
+        if (popupCallback) popupCallback(feature, layer);
       }
-    }));
-    capas.puntos = L.geoJSON(features, {
-      pointToLayer: (f, latlng) => L.circleMarker(latlng, {
-        radius: 5,
-        fillColor: colores[f.properties.clase] || '#000',
-        color: '#000',
-        weight: 1,
-        fillOpacity: 0.8
-      }),
-      onEachFeature: (f, layer) => {
-        layer.bindPopup(`<b>PlotID:</b> ${f.properties.plotid}<br><b>Clase CUT ${año}:</b> ${f.properties.clase}`);
-      }
-    }).addTo(mapa);
-    mapa.fitBounds(capas.puntos.getBounds());
-  });
+    });
+    capa.addTo(map);
+    capasBase[nombreTabla] = capa;
+    controlCapas.addOverlay(capa, nombreTabla);
+  } catch (error) {
+    console.error(`Error al cargar ${nombreTabla}:`, error);
+  }
 }
 
-// 7. Cargar capas base con estilos
-function cargarGeoJSON(tabla, nombre, estilo, campoPopup) {
-  const url = `${SUPABASE_URL}/rest/v1/${tabla}?select=${campoPopup},geom`;
-  fetch(url, {
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`
-    }
-  })
-  .then(res => res.json())
-  .then(data => {
-    const features = data.map(d => ({
-      type: 'Feature',
-      geometry: JSON.parse(d.geom),
-      properties: { [campoPopup]: d[campoPopup] }
-    }));
-    let capa;
-    if (tabla === 'POBLADOS') {
-      capa = L.geoJSON(features, {
-        pointToLayer: (f, latlng) => L.circleMarker(latlng, {
-          radius: 4,
-          color: 'blue',
-          fillOpacity: 0.6
-        }),
-        onEachFeature: (f, l) => l.bindPopup(`<b>Poblado:</b> ${f.properties[campoPopup]}`)
-      });
-    } else {
-      capa = L.geoJSON(features, {
-        style: estilo,
-        onEachFeature: (f, l) => l.bindPopup(`<b>${campoPopup}:</b> ${f.properties[campoPopup]}`)
-      });
-    }
-    capas[nombre] = capa;
-    capa.addTo(mapa);
-    controlCapas.addOverlay(capa, nombre);
-  });
-}
+const capasBase = {};
+const controlCapas = L.control.layers(null, null, { collapsed: false }).addTo(map);
 
-let controlCapas;
-
-// 8. Inicializa todo
-window.addEventListener('DOMContentLoaded', () => {
-  initMapa();
-  initSelector();
-  cargarPuntos(años[0]);
-
-  controlCapas = L.control.layers(null, null, { collapsed: false }).addTo(mapa);
-
-  cargarGeoJSON('LIMITE_PROVINCIAL_CONALI_CNE_2022_4326', 'Provincias', { color: 'red', weight: 1 }, 'PROVINCIA');
-  cargarGeoJSON('ECOREGIONES_EC', 'Ecorregiones', { color: 'green', weight: 1, fillOpacity: 0.4 }, 'NOMBRE');
-  cargarGeoJSON('RIOS_SIMPLES4326', 'Ríos', { color: 'blue', weight: 1 }, 'NAM');
-  cargarGeoJSON('POBLADOS', 'Poblados', {}, 'nombre');
+// Cargar capas vectoriales
+cargarCapa('ECOREGIONES_EC', 'NOMBRE', { color: 'green' }, (f, l) => {
+  l.bindPopup(`<b>Ecorregión:</b> ${f.properties.NOMBRE}`);
 });
+
+cargarCapa('LIMITE_PROVINCIAL_CONALI_CNE_2022_4326', 'PROVINCIA', { color: 'purple', weight: 2 }, (f, l) => {
+  l.bindPopup(`<b>Provincia:</b> ${f.properties.PROVINCIA}`);
+});
+
+cargarCapa('POBLADOS', 'nombre', { color: 'black', weight: 1 }, (f, l) => {
+  l.bindPopup(`<b>Poblado:</b> ${f.properties.nombre}`);
+});
+
+cargarCapa('RIOS_SIMPLES4326', 'NAM', { color: 'blue', weight: 1 }, (f, l) => {
+  l.bindPopup(`<b>Río:</b> ${f.properties.NAM}`);
+});
+
+// Cargar puntos validados (con leyenda de las 22 clases)
+async function cargarPuntos() {
+  const url = `${supabaseUrl}/rest/v1/base_puntos_validados_ec_gl_1985_2023?select=*`;
+  try {
+    const response = await fetch(url, { headers });
+    const data = await response.json();
+    const capa = L.geoJSON(data, {
+      pointToLayer: (feature, latlng) => {
+        const clase = feature.properties.clase2023 || 'Sin Información';
+        const color = coloresClases[clase] || 'gray';
+        return L.circleMarker(latlng, {
+          radius: 5,
+          fillColor: color,
+          color: '#000',
+          weight: 1,
+          fillOpacity: 0.8
+        });
+      },
+      onEachFeature: (feature, layer) => {
+        const props = feature.properties;
+        let contenido = `<b>PlotID:</b> ${props.plotid}<br>`;
+        for (let y = 1985; y <= 2023; y++) {
+          if (props[`clase${y}`]) {
+            contenido += `<b>${y}:</b> ${props[`clase${y}`]}<br>`;
+          }
+        }
+        layer.bindPopup(contenido);
+      }
+    });
+    capa.addTo(map);
+    capasBase['Puntos validados'] = capa;
+    controlCapas.addOverlay(capa, 'Puntos validados');
+  } catch (error) {
+    console.error('Error al cargar puntos validados:', error);
+  }
+}
+
+// Diccionario de colores para las 22 clases
+const coloresClases = {
+  'Bosque': '#228B22',
+  'Pastos': '#BDB76B',
+  'Agricultura': '#FFFF00',
+  'Zona urbana': '#FF0000',
+  'Cuerpos de agua': '#1E90FF',
+  'Manglar': '#8B4513',
+  'Humedal': '#00CED1',
+  'Paramo': '#A9A9A9',
+  'Afloramientos rocosos': '#808080',
+  'Sin vegetación': '#F5DEB3',
+  'Bosque seco': '#CD853F',
+  'Zonas mineras': '#FFA500',
+  'Playas': '#FFFACD',
+  'Salinas': '#F08080',
+  'Cementerio': '#C0C0C0',
+  'Cultivo permanente': '#98FB98',
+  'Cultivo transitorio': '#EEE8AA',
+  'Suelo desnudo': '#DEB887',
+  'Zona industrial': '#D2691E',
+  'Zonas eriales': '#FAFAD2',
+  'Infraestructura': '#708090',
+  'Sin Información': '#D3D3D3'
+};
+
+cargarPuntos();
