@@ -4,42 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Geoportal de Validación CUT</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-sBfF1/K/WQw9lWQtMTYX0pRvQT6S0clT5AeQmyOQVoo=" crossorigin="">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <style>
-    #map {
-      height: 100vh;
-      width: 100vw;
-    }
+    #map { height: 100vh; width: 100vw; }
     .formulario, .leyenda, .controles-capas {
-      position: absolute;
-      z-index: 1000;
-      background: white;
-      padding: 10px;
-      border-radius: 5px;
-      font-family: sans-serif;
+      position: absolute; z-index: 1000; background: white;
+      padding: 10px; border-radius: 5px; font-family: sans-serif;
     }
-    .formulario {
-      top: 60px;
-      right: 10px;
-      width: 250px;
-      font-size: 13px;
-    }
-    .leyenda {
-      bottom: 10px;
-      right: 10px;
-      max-height: 300px;
-      overflow-y: auto;
-      font-size: 12px;
-    }
-    .controles-capas {
-      top: 60px;
-      left: 10px;
-      font-size: 13px;
-    }
+    .formulario { top: 60px; right: 10px; width: 250px; font-size: 13px; }
+    .leyenda { bottom: 10px; right: 10px; font-size: 12px; }
+    .controles-capas { top: 60px; left: 10px; font-size: 13px; }
   </style>
 </head>
-
 <body>
   <h2 style="font-family: sans-serif; margin: 10px;">
     Verificación y reporte in situ del Muestreo de Validación CUT - serie temporal 1985 - 2023
@@ -72,9 +48,7 @@
 
   <div id="map"></div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-o9N1jE5wQq9N8z4CwiYJ5DRHIGia0M8VrTLJ3iHFHSA="
-    crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script src="main.js"></script>
 </body>
