@@ -3,7 +3,7 @@ const map = L.map("map").setView([-1.8312, -78.1834], 6);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
 
 const supabaseUrl = "https://kkjtytomvcfimovxllpj.supabase.co/rest/v1/";
-const apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz..."; // acortado por privacidad
+const apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtranR5dG9tdmNmaW1vdnhsbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzMDQzMzgsImV4cCI6MjA2ODg4MDMzOH0.BWtig4Et9BLE2t9xno6JudoRho3xBCS4VjFL1h3TT-8";
 
 async function cargarCapa(nombreTabla, opciones = {}, popupFn = null) {
   const url = `${supabaseUrl}${nombreTabla}?select=*,geom=st_asgeojson(geom)`;
