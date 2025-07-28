@@ -3,91 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Geoportal Validación CUT Ecuador</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-  <style>
-    #map { height: 90vh; width: 100%; }
-    #leyenda {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: white;
-      padding: 10px;
-      z-index: 1000;
-      max-height: 80vh;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-    #reporte {
-      position: absolute;
-      bottom: 10px;
-      left: 10px;
-      background: white;
-      padding: 10px;
-      z-index: 1000;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      width: 300px;
-    }
-    #select-anyo {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      z-index: 1000;
-    }
-    .leyenda-color {
-      display: flex;
-      align-items: center;
-      margin-bottom: 4px;
-    }
-    .leyenda-color span {
-      display: inline-block;
-      width: 18px;
-      height: 18px;
-      margin-right: 6px;
-      border: 1px solid #000;
-    }
-  </style>
+  <title>Geoportal Validación CUT</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-  <h2 style="text-align:center">Verificación y reporte in situ del Muestreo de Validación CUT - serie temporal 1985 a 2023</h2>
-
-  <select id="select-anyo"></select>
-  <div id="map"></div>
-
+  <h2>Reporte in situ del Muestreo de Validación CUT - serie temporal 1985 a 2023</h2>
   <div id="leyenda">
     <h4>Leyenda de Coberturas</h4>
-    <div id="leyenda-colores"></div>
-    <hr>
     <label><input type="checkbox" id="chkProvincias" checked> Provincias</label><br>
     <label><input type="checkbox" id="chkEcorregiones" checked> Ecorregiones</label><br>
     <label><input type="checkbox" id="chkRios" checked> Ríos</label><br>
     <label><input type="checkbox" id="chkPoblados" checked> Poblados</label><br>
     <label><input type="checkbox" id="chkPuntos" checked> Puntos Validados</label>
+    <div id="leyenda-colores"></div>
   </div>
 
-  <div id="reporte">
+  <div id="map" style="height: 500px;"></div>
+
+  <div id="formulario">
     <h4>Formulario de Verificación</h4>
-    <form id="form-reporte">
+    <form>
+      <label for="select-anyo">Año:</label>
+      <select id="select-anyo"></select><br>
+
       <label for="plotid">PlotID:</label>
-      <input type="text" id="plotid" name="plotid" required><br>
+      <input type="text" id="plotid"><br>
+
       <label for="cobertura_actual">Cobertura Actual:</label>
-      <input type="text" id="cobertura_actual" name="cobertura_actual" required><br>
+      <input type="text" id="cobertura_actual"><br>
+
       <label for="altitud">Altitud:</label>
-      <input type="text" id="altitud" name="altitud"><br>
+      <input type="text" id="altitud"><br>
+
       <label for="nombre_tecnico">Nombre del Técnico:</label>
-      <input type="text" id="nombre_tecnico" name="nombre_tecnico"><br>
+      <input type="text" id="nombre_tecnico"><br>
+
       <label for="direccion_provincial">Dirección Provincial Ambiental:</label>
-      <input type="text" id="direccion_provincial" name="direccion_provincial"><br>
-      <label for="observaciones">Observaciones:</label>
-      <textarea id="observaciones" name="observaciones"></textarea><br>
+      <input type="text" id="direccion_provincial"><br>
+
+      <label for="observaciones">Observaciones:</label><br>
+      <textarea id="observaciones" rows="3" cols="30"></textarea><br>
+
       <button type="button" onclick="generarPDF()">Imprimir PDF</button>
     </form>
   </div>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="main.js"></script>
 </body>
 </html>
