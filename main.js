@@ -1,4 +1,4 @@
-/ main.js completo para el Geoportal con Supabase y Leaflet
+// main.js completo para el Geoportal con Supabase y Leaflet
 
 // 1. Configuración de Supabase
 const SUPABASE_URL = 'https://kkjtytomvcfimovxllpj.supabase.co';
