@@ -1,43 +1,60 @@
+A continuación el code del main.js actualizado
 
-const apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtranR5dG9tdmNmaW1vdnhsbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzMDQzMzgsImV4cCI6MjA2ODg4MDMzOH0.BWtig4Et9BLE2t9xno6JudoRho3xBCS4VjFL1h3TT-8";
-const urlBase = "https://kkjtytomvcfimovxllpj.supabase.co/rest/v1/";
+// main.js
 
-const capas = {
-  "LIMITE_PROVINCIAL_CONALI_CNE_2022_4326": { color: "#000", weight: 1 },
-  "ECOREGIONES_EC": { color: "#008000", weight: 1 },
-  "POBLADOS": { color: "#800000", weight: 3 },
-  "RIOS_SIMPLES4326": { color: "#0000FF", weight: 1 },
-  "base_puntos_validados_ec_gl_1985_2023": { color: "#FF0000", weight: 3 }
-};
+// Guardar datos del formulario en Supabase
+const form = document.getElementById('form-reporte');
 
-const map = L.map("map").setView([-1.25, -78.5], 6);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  attribution: "© OpenStreetMap contributors"
-}).addTo(map);
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-async function cargarCapa(nombreTabla, estilo) {
-  try {
-    const res = await fetch(`${urlBase}${nombreTabla}?select=geom`, {
-      headers: {
-        apikey: apiKey,
-        Authorization: `Bearer ${apiKey}`
-      }
-    });
-    if (!res.ok) throw new Error("Error al cargar");
-    const data = await res.json();
-    const geojson = {
-      type: "FeatureCollection",
-      features: data.map(d => ({
-        type: "Feature",
-        geometry: JSON.parse(d.geom),
-        properties: d
-      }))
-    };
-    const layer = L.geoJSON(geojson, { style: () => estilo });
-    layer.addTo(map);
-  } catch (e) {
-    console.error(`❌ Error al cargar ${nombreTabla}:`, e);
+  const plotid = document.getElementById('plotid').value;
+  const clase = document.getElementById('clase').value;
+  const fecha = document.getElementById('fecha').value;
+  const tecnico = document.getElementById('tecnico').value;
+  const provincia = document.getElementById('provincia').value;
+  const altitud = document.getElementById('altitud').value;
+  const fotoInput = document.getElementById('foto');
+  const foto = fotoInput.files[0];
+
+  if (!plotid || !clase || !fecha || !tecnico || !provincia || !altitud || !foto) {
+    alert('Por favor, completa todos los campos antes de guardar.');
+    return;
   }
-}
 
-Object.entries(capas).forEach(([nombre, estilo]) => cargarCapa(nombre, estilo));
+  try {
+    const supabaseUrl = 'https://kkjtytomvcfimovxllpj.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtranR5dG9tdmNmaW1vdnhsbHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzMDQzMzgsImV4cCI6MjA2ODg4MDMzOH0.BWtig4Et9BLE2t9xno6JudoRho3xBCS4VjFL1h3TT-8';
+    const { createClient } = supabase;
+    const supabaseClient = createClient(supabaseUrl, supabaseKey);
+
+    // Subir imagen a Supabase Storage
+    const filePath = `reportes_fotos/${plotid}_${Date.now()}.jpg`;
+    const { data: uploadData, error: uploadError } = await supabaseClient.storage.from('reportes_fotos').upload(filePath, foto);
+
+    if (uploadError) throw uploadError;
+
+    const imageUrl = `${supabaseUrl}/storage/v1/object/public/${uploadData.fullPath}`;
+
+    // Insertar en tabla reportes_in_situ
+    const { data, error } = await supabaseClient.from('reportes_in_situ').insert([
+      {
+        plotid,
+        clase_verificada: clase,
+        fecha_verificacion: fecha,
+        tecnico,
+        provincia,
+        altitud,
+        foto_url: imageUrl
+      }
+    ]);
+
+    if (error) throw error;
+
+    alert('¡Reporte guardado correctamente!');
+    form.reset();
+  } catch (err) {
+    console.error('Error al guardar el reporte:', err);
+    alert('Hubo un error al guardar el reporte. Revisa la consola.');
+  }
+});
